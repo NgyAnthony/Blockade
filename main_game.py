@@ -10,6 +10,12 @@ class CardSprite:
         (x, y) = target_posn
         self.posn = (x, y)
 
+    def update(self):
+        pass
+
+    def draw(self, target_surface):
+        target_surface.blit(self.image, self.posn)
+
 
 def draw_board():
     game_board = Board()
@@ -36,6 +42,7 @@ def draw_board():
     surface = pygame.display.set_mode((surface_x, surface_y))
     #surface = pygame.display.set_mode((1366, 768))
 
+    all_sprites = []      # Keep a list of all sprites in the game
 
     # Adjust the number of files in "Assets" dir.
     for side in PLAYER:
@@ -64,6 +71,17 @@ def draw_board():
         }
         ASSETS_IDnPATH.append(img_dict)
 
+    # Create a sprite object for each card, and populate all_sprite.
+    for row in range(len(game_board.grid)):
+        for col in range(len(game_board.grid[row])):
+            readable = game_board.grid[row][col].readable_path
+            for id_image in ASSETS_IDnPATH:
+                if id_image.get('id') == readable:
+                    card_offset_x = (sq_sz_x - id_image.get('img').get_width()) // 2
+                    card_offset_y = (sq_sz_y - id_image.get('img').get_width()) // 2
+                    a_card = CardSprite(id_image.get('img'),
+                                        (col * sq_sz_x + card_offset_x, row * sq_sz_y + card_offset_y))
+                    all_sprites.append(a_card)
     while True:
         # Look for an event from keyboard, mouse
         ev = pygame.event.poll()
@@ -87,14 +105,8 @@ def draw_board():
                 surface.fill(standard_colors[c_indx], the_square)
 
         # Now that the board is drawn, draw the cards.
-        for row in range(len(game_board.grid)):
-            for col in range(len(game_board.grid[row])):
-                readable = game_board.grid[row][col].readable_path
-                for id_image in ASSETS_IDnPATH:
-                    if id_image.get('id') == readable:
-                        card_offset_x = (sq_sz_x - id_image.get('img').get_width()) // 2
-                        card_offset_y = (sq_sz_y - id_image.get('img').get_width()) // 2
-                        surface.blit(id_image.get('img'), (col * sq_sz_x + card_offset_x, row * sq_sz_y + card_offset_y))
+        for sprite in all_sprites:
+            sprite.draw(surface)
 
         pygame.display.flip()
 
