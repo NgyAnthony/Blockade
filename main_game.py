@@ -21,7 +21,7 @@ def draw_board():
     ASSETS_ACCESS = []
     ASSETS_IDnPATH = []
 
-    colors = [(255,0,0), (0,0,0)]    # Set up colors [red, black]
+    standard_colors = [(84, 175, 214), (214, 108, 84), (79, 79, 79)] # Set up colors [blue, red, grey]
 
     n_col = len(game_board.grid[0])  # This is an n_col * n_row board.
     n_row = len(game_board.grid)
@@ -34,6 +34,8 @@ def draw_board():
 
     # Create the surface of (width, height) and its window.
     surface = pygame.display.set_mode((surface_x, surface_y))
+    #surface = pygame.display.set_mode((1366, 768))
+
 
     # Adjust the number of files in "Assets" dir.
     for side in PLAYER:
@@ -55,7 +57,7 @@ def draw_board():
     # Load every images with independant readable variables from ASSETS_ACCESS
     for x in range(len(ASSETS_ACCESS)):
         current_access = ASSETS_ACCESS[x]  # Readable path as variable
-        current_access = pygame.transform.scale(pygame.image.load(ASSETS_PATH[x]), (100, 100))  # Open images with previous variable as argument
+        current_access = pygame.transform.scale(pygame.image.load(ASSETS_PATH[x]), (85, 85))  # Open images with previous variable as argument
         img_dict = {
             'id': ASSETS_ACCESS[x],
             'img': current_access
@@ -71,19 +73,28 @@ def draw_board():
         # Completely redraw the surface, starting with background.
         surface.fill((0, 200, 255))
 
+        # Draw a fresh background (board with player1 and 2 sides)
         for row in range(len(game_board.grid)):
-            c_indx = row % 2
+            # Determine which color must be used.
+            if row == 0:
+                c_indx = 0
+            elif row == 5:
+                c_indx = 1
+            else:
+                c_indx = 2
             for col in range(len(game_board.grid[row])):
                 the_square = (col*sq_sz_y, row*sq_sz_x, sq_sz_x, sq_sz_y)
-                surface.fill(colors[c_indx], the_square)
-                c_indx = (c_indx + 1) % 2
+                surface.fill(standard_colors[c_indx], the_square)
 
+        # Now that the board is drawn, draw the cards.
         for row in range(len(game_board.grid)):
             for col in range(len(game_board.grid[row])):
                 readable = game_board.grid[row][col].readable_path
                 for id_image in ASSETS_IDnPATH:
                     if id_image.get('id') == readable:
-                        surface.blit(id_image.get('img'), (col * sq_sz_x, row * sq_sz_y))
+                        card_offset_x = (sq_sz_x - id_image.get('img').get_width()) // 2
+                        card_offset_y = (sq_sz_y - id_image.get('img').get_width()) // 2
+                        surface.blit(id_image.get('img'), (col * sq_sz_x + card_offset_x, row * sq_sz_y + card_offset_y))
 
         pygame.display.flip()
 

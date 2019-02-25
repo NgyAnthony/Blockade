@@ -97,7 +97,6 @@ class Dealer:
         self.readable_path = "{}/{}/{}".format(self.side, self.random_direction, self.random_number)
 
 
-
 class Card:
     def __init__(self, side, direction, number):
         self.side = side
