@@ -1,11 +1,15 @@
 import pygame
 import os
+import logic
+
+
 class CardSprite:
     def __init__(self, img, target_posn):
         self.image = img
         self.target_posn = target_posn
         (x, y) = target_posn
         self.posn = (x, y)
+
 
 def draw_board():
 
@@ -36,3 +40,6 @@ def draw_board():
     for x in range(len(ASSETS_ACCESS)):
         current_access = ASSETS_ACCESS[x]  # Readable path as variable
         current_access = pygame.image.load(ASSETS_PATH[x])  # Open images with previous variable as argument
+        print(current_access)
+
+draw_board()

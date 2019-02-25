@@ -26,7 +26,7 @@ class Board:
         self.select_firstplayer()
 
     def __repr__(self):
-        return "\n{}\n{}\n{}\n{}\n{},\n{}\n, {}, {}, {}, {}".format(self.grid[0], self.grid[1], self.grid[2], self.grid[3], self.grid[4], self.grid[5], self.player_hand1, self.player_hand2, self.current_turn)
+        return "\n{}\n{}\n{}\n{}\n{},\n{}\n, {}, {}, {}".format(self.grid[0], self.grid[1], self.grid[2], self.grid[3], self.grid[4], self.grid[5], self.player_hand1, self.player_hand2, self.current_turn)
 
     def __str__(self):
         return "\n[BOARD CLASS] \n Grid: {} \n Player_hand1: {},\n Player_hand2: {},\n Current turn: {}".format(self.grid, self.player_hand1, self.player_hand2, self.current_turn)
@@ -43,7 +43,8 @@ class Board:
 
     def addToBoard(self, position, card):
         """ This function put the chosen card to the board."""
-        pass
+        (x, y) = position
+        self.grid[x][y].append(card)
 
     def initial_distribution(self):
         """ This function initialize the first set of cards"""
@@ -60,15 +61,13 @@ class Board:
         # Distribute cards to the grid
         for row in range(len(self.grid)):
             for col in range(len(self.grid[row])):
-                side = np.random.choice(self.sides, 1)
-                card = Dealer(side[0])
+                side = np.random.choice(self.sides, 1)[0]
+                card = Dealer(side)
                 self.grid[row][col] = card
-
-
 
     def select_firstplayer(self):
         """ This function randomly chooses the first player."""
-        self.current_turn = np.random.choice(self.sides, 1)
+        self.current_turn = np.random.choice(self.sides, 1)[0]
 
 
 class Dealer:
@@ -83,14 +82,14 @@ class Dealer:
         self.getCard()
 
     def __repr__(self):
-        return "Dealer('{}', '{}', {})".format(self.side, self.random_direction[0], self.random_number[0])
+        return "Dealer('{}', '{}', {})".format(self.side, self.random_direction, self.random_number)
 
     def __str__(self):
         return '\n[DEALER CLASS] \n Side: {} - Direction: {} - Number : {}'.format(self.side, self.random_direction, self.random_number)
 
     def getCard(self):
-        self.random_number = np.random.choice(self.number, 1, p=self.p_number)
-        self.random_direction = np.random.choice(self.directions, 1)
+        self.random_number = np.random.choice(self.number, 1, p=self.p_number)[0]
+        self.random_direction = np.random.choice(self.directions, 1)[0]
         Card(self.side, self.random_direction, self.random_number)
 
 
@@ -99,9 +98,3 @@ class Card:
         self.side = side
         self.direction = direction
         self.number = number
-
-
-a = Dealer("Blue")
-print(a)
-b = Board()
-print(b)
