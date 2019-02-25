@@ -74,12 +74,13 @@ class Dealer:
     def __init__(self, side):
         """ This constructor sets up a database for Directions, Numbers, and probabilities of Numbers."""
         self.directions = ("DtL-DtR", "DtL-DtR-DbR-DbL", "DtL-T-DtR", "DtL-T-DtR-R-DbR-B-DbL-L",
-                           "L-R", "L-T-R", "L-T-R-B", "P", "PL", "PR", "R-DbR-B-DbL-L", "T", "B")
+                           "L-R", "L-T-R", "L-T-R-B", "P", "PL", "PR", "R-DbR-B-DbL-L", "T", "T-B")
         self.number = ("1", "1-2", "1-3", "2", "3", "4", "inf")
         # Probability of obtaining each number in order.
         self.p_number = [0.125, 0.15, 0.20, 0.20, 0.15, 0.125, 0.05]
         self.side = side
         self.getCard()
+        self.makeReadable()
 
     def __repr__(self):
         return "Dealer('{}', '{}', {})".format(self.side, self.random_direction, self.random_number)
@@ -91,6 +92,10 @@ class Dealer:
         self.random_number = np.random.choice(self.number, 1, p=self.p_number)[0]
         self.random_direction = np.random.choice(self.directions, 1)[0]
         Card(self.side, self.random_direction, self.random_number)
+
+    def makeReadable(self):
+        self.readable_path = "{}/{}/{}".format(self.side, self.random_direction, self.random_number)
+
 
 
 class Card:
