@@ -39,7 +39,6 @@ class Base:
         self.player = ("Blue", "Red")
         self.DIRECTIONS_FILES = ("1.png", "1-2.png", "1-3.png", "2.png", "3.png", "4.png", "inf.png")
         (self.ASSETS_PATH, self.ASSETS_ACCESS, self.ASSETS_IDnPATH) = ([], [], [])
-
         (self.n_col, self.n_row) = (len(self.game_board.grid[0]), len(self.game_board.grid))  # This is an n_col * n_row board.
         (self.surface_x, self.surface_y) = (self.window.get_size())
         (self.sq_sz_x, self.sq_sz_y) = (self.surface_x // self.n_col, self.surface_y // self.n_row)
@@ -105,6 +104,22 @@ class Base:
                                             (col * self.sq_sz_x + card_offset_x, row * self.sq_sz_y + card_offset_y))
                         self.grid_sprites.append(a_card)
 
+    def create_handsprite(self, element):
+        row = 0
+        for col in range(len(element)):
+            readable = element[col].readable_path
+            for id_image in self.ASSETS_IDnPATH:
+                if id_image.get('id') == readable:
+                    card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
+                    card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
+                    a_card = CardSprite(id_image.get('img'),
+                                        (col * self.sq_sz_x + card_offset_x, row * self.sq_sz_y + card_offset_y))
+                    row += 1
+                    if element == self.game_board.player_hand1:
+                        self.hand1_sprites.append(a_card)
+                    elif element == self.game_board.player_hand2:
+                        self.hand2_sprites.append(a_card)
+
     def main(self):
         keys = set()
         buttons = set()
@@ -128,6 +143,7 @@ class Base:
                     buttons.add(event.button)
                     newbuttons.add(event.button)
                     mousepos = event.pos
+
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)
                     mousepos = event.pos

@@ -9,6 +9,8 @@ class Game(Base):
         Base.__init__(self, config.SCREEN_TITLE, config.SCREEN_WIDTH, config.SCREEN_HEIGHT, config.FRAMERATE, config.SCREEN_FULLSCREEN, Board())
         self.load_folders(images=True)
         self.create_sprite()
+        self.create_handsprite(self.game_board.player_hand1)
+        self.create_handsprite(self.game_board.player_hand2)
         self.main()
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
@@ -21,9 +23,9 @@ class Game(Base):
         # Draw a fresh background (board with player1 and 2 sides)
         for row in range(len(self.game_board.grid)):
             # Determine which color must be used for the background.
-            if row == 0:
+            if row == 1:
                 c_indx = 0
-            elif row == 5:
+            elif row == 6:
                 c_indx = 1
             else:
                 c_indx = 2

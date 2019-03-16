@@ -5,16 +5,17 @@ class Board:
     def __init__(self):
         """ This constructor set the grid, two hands, sides, and the current turn."""
         # A matrice determines the board of 5 by 6
-        self.grid = [[None, None, None, None, None],
-                     [None, None, None, None, None],
-                     [None, None, None, None, None],
-                     [None, None, None, None, None],
-                     [None, None, None, None, None],
-                     [None, None, None, None, None]]
+        self.playing_grid = [[None, None, None, None, None],
+                             [None, None, None, None, None],
+                             [None, None, None, None, None],
+                             [None, None, None, None, None],
+                             [None, None, None, None, None],
+                             [None, None, None, None, None]]
 
         # Each hand is determined by a list of 6 elements.
-        self.player_hand1 = [None, None, None, None, None, None]
-        self.player_hand2 = [None, None, None, None, None, None]
+        self.player_hand1 = [None, None, None, None, None]
+        self.player_hand2 = [None, None, None, None, None]
+        self.grid = []
 
         # Sides are determined by a list with the strings Blue and Red.
         self.sides = ["Blue", "Red"]
@@ -24,12 +25,19 @@ class Board:
 
         self.initial_distribution()
         self.select_firstplayer()
+        self.whole_grid()
 
     def __repr__(self):
-        return "\n{}\n{}\n{}\n{}\n{},\n{}\n, {}, {}, {}".format(self.grid[0], self.grid[1], self.grid[2], self.grid[3], self.grid[4], self.grid[5], self.player_hand1, self.player_hand2, self.current_turn)
+        return "\n{}\n{}\n{}\n{}\n{},\n{}\n, {}, {}, {}".format(self.playing_grid[0], self.playing_grid[1], self.playing_grid[2], self.playing_grid[3], self.playing_grid[4], self.playing_grid[5], self.player_hand1, self.player_hand2, self.current_turn)
 
     def __str__(self):
-        return "\n[BOARD CLASS] \n Grid: {} \n Player_hand1: {},\n Player_hand2: {},\n Current turn: {}".format(self.grid, self.player_hand1, self.player_hand2, self.current_turn)
+        return "\n[BOARD CLASS] \n Playing_grid: {} \n Player_hand1: {},\n Player_hand2: {},\n Current turn: {}".format(self.playing_grid, self.player_hand1, self.player_hand2, self.current_turn)
+
+    def whole_grid(self):
+        self.grid.append(self.player_hand1)
+        for i in self.playing_grid:
+            self.grid.append(i)
+        self.grid.append(self.player_hand2)
 
     def addHand(self, player):
         """ This function distributes cards to a player everytime his hand isn't full."""
@@ -44,7 +52,7 @@ class Board:
     def addToBoard(self, position, card):
         """ This function put the chosen card to the board."""
         (x, y) = position
-        self.grid[x][y].append(card)
+        self.playing_grid[x][y].append(card)
 
     def initial_distribution(self):
         """ This function initialize the first set of cards"""
@@ -59,11 +67,11 @@ class Board:
             self.player_hand2[x] = card
 
         # Distribute cards to the grid
-        for row in range(len(self.grid)):
-            for col in range(len(self.grid[row])):
+        for row in range(len(self.playing_grid)):
+            for col in range(len(self.playing_grid[row])):
                 side = np.random.choice(self.sides, 1)[0]
                 card = Dealer(side)
-                self.grid[row][col] = card
+                self.playing_grid[row][col] = card
 
     def select_firstplayer(self):
         """ This function randomly chooses the first player."""
@@ -102,3 +110,6 @@ class Card:
         self.side = side
         self.direction = direction
         self.number = number
+
+
+print(Board())
