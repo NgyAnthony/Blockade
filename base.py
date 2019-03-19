@@ -14,6 +14,7 @@ class CardSprite:
         self.target_posn = target_posn
         (x, y) = target_posn
         self.posn = (x, y)
+        self.rect = img.get_rect(topleft=(x,y))
 
     def update(self):
         pass
@@ -132,7 +133,6 @@ class Base:
             newkeys = set()
             newbuttons = set()
             lastmousepos = mousepos
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -143,6 +143,10 @@ class Base:
                     buttons.add(event.button)
                     newbuttons.add(event.button)
                     mousepos = event.pos
+                    pos = pygame.mouse.get_pos()
+                    for s in self.grid_sprites:
+                        if s.rect.collidepoint(pos):
+                            print(s)
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)
