@@ -34,8 +34,9 @@ class Game(Base):
                 self.surface.fill(self.standard_colors[c_indx], the_square)
 
         # Now that the board is drawn, draw the cards.
-        for sprite in self.grid_sprites:
-            sprite.draw(self.surface)
+        for row in range(len(self.game_board.grid)):
+            for col in range(len(self.game_board.grid[row])):
+                self.game_board.grid[row][col]['img'].draw(self.surface)
 
 
 if __name__ == "__main__":
