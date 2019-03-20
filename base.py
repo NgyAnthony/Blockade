@@ -14,14 +14,14 @@ class CardSprite:
         self.target_posn = target_posn
         (x, y) = target_posn
         self.posn = (x, y)
-        #self.rect = img.get_rect(topleft=(x,y))
+        self.rect = img.get_rect(topleft=(x,y))
 
     def update(self):
         pass
 
     def draw(self, target_surface):
         target_surface.blit(self.image, self.posn)
-        #print(self.posn)
+
 
 class Base:
     def __init__(self, title, width, height, framerate, fullscreen, game_board):
@@ -48,7 +48,6 @@ class Base:
         self.standard_colors = [(84, 175, 214), (214, 108, 84), (79, 79, 79)]  # Set up colors [blue, red, grey]
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
-        #(self.all_sprites, self.grid_sprites, self.hand1_sprites, self.hand2_sprites) = ([], [], [], [])
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
@@ -101,25 +100,17 @@ class Base:
                     if id_image.get('id') == readable:
                         card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
                         card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
-                        #print('x', col * self.sq_sz_x + card_offset_x)
-                        #print('y', row * self.sq_sz_y + card_offset_y)
-                        #print('col', col)
-                        #print('row', row)
-                        a_card = CardSprite(id_image.get('img'),
-                                            (col * self.sq_sz_x + card_offset_x, row * self.sq_sz_y + card_offset_y))
-                        self.game_board.playing_grid[row][col]['img'] = a_card
-                        print(self.game_board.playing_grid[row][col]['img'].posn)
-                        print(self.game_board.playing_grid[row][col]['card'].number)
-                        print(self.game_board.playing_grid[row][col])
 
-    def debug(self):
-        for row in range(len(self.game_board.playing_grid)):
-            for col in range(len(self.game_board.playing_grid[row])):
-                print(self.game_board.playing_grid[row][col]['card'].random_number)
+                        a_card = CardSprite(id_image.get('img'),
+                                            (col * self.sq_sz_x + card_offset_x, (row+1) * self.sq_sz_y + card_offset_y))
+                        self.game_board.playing_grid[row][col]['img'] = a_card
 
     def create_handsprite(self, element):
+        if element == self.game_board.player_hand1:
+            row = 0
+        elif element == self.game_board.player_hand2:
+            row = 7
 
-        row = 0
         for col in range(len(element)):
             readable = element[col]['card'].readable_path
             for id_image in self.ASSETS_IDnPATH:
@@ -155,10 +146,10 @@ class Base:
                     newbuttons.add(event.button)
                     mousepos = event.pos
                     pos = pygame.mouse.get_pos()
-                    self.debug()
-                    #for s in self.grid_sprites:
-                    #   if s.rect.collidepoint(pos):
-                    #        pass
+                    for row in range(len(self.game_board.grid)):
+                        for col in range(len(self.game_board.grid[row])):
+                           if self.game_board.grid[row][col]['img'].rect.collidepoint(pos):
+                                print(self.game_board.grid[row][col]['card'])
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)

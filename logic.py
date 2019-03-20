@@ -19,8 +19,6 @@ class Board:
 
         self.grid = []
 
-        print(self.player_hand1)
-
         # Sides are determined by a list with the strings Blue and Red.
         self.sides = ["Blue", "Red"]
 
@@ -63,7 +61,7 @@ class Board:
         """ This function initialize the first set of cards"""
         # Distribute cards to the first player
         for x in range(len(self.player_hand1)):
-            a = Dealer("Red")
+            a = Dealer("Blue")
             card = a.card
             self.player_hand1[x]['card'] = card
 
@@ -122,6 +120,3 @@ class Card:
 
     def __str__(self):
         return '\n[CARD CLASS] \n Side: {} - Direction: {} - Number : {}'.format(self.side, self.direction, self.number)
-
-
-print(Board())
