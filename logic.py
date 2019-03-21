@@ -49,8 +49,9 @@ class Board:
         elif player == self.player_hand2:
             side = "Red"
 
-        picked_card = Dealer(side)
-        player.append(picked_card)
+        a = Dealer(side)
+        picked_card = a.card
+        player.append({'card': picked_card, 'img': None})
 
     def addToBoard(self, position, card):
         """ This function put the chosen card to the board."""

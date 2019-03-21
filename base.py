@@ -53,7 +53,6 @@ class Base:
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
-        self.selected_img = None
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
@@ -174,22 +173,26 @@ class Base:
                     for row in range(len(self.game_board.playing_grid)):
                         for col in range(len(self.game_board.playing_grid[row])):
                             if self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
-                                self.game_board.playing_grid[row][col]['card'] = self.selected
-                                self.game_board.playing_grid[row][col]['img'].image = self.selected_img
+                                self.game_board.playing_grid[row][col]['card'] = self.selected['card']
+                                self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
+
+                                if self.selected['card'].side == "Blue":
+                                    hand = self.game_board.player_hand1
+                                elif self.selected['card'].side == "Red":
+                                    hand = self.game_board.player_hand2
+
+                                hand.remove(self.selected)
+                                self.game_board.addHand(hand)
+                                self.create_handsprite(hand)
                                 self.selected = None
-                                self.selected_img = None
 
                     for card_dict in self.game_board.player_hand1:
                         if card_dict['img'].rect.collidepoint(pos):
-                            self.selected = card_dict['card']
-                            self.selected_img = card_dict['img'].image
-                            #self.game_board.player_hand1.remove(card_dict)
+                            self.selected = card_dict
 
                     for card_dict in self.game_board.player_hand2:
                         if card_dict['img'].rect.collidepoint(pos):
-                            self.selected = card_dict['card']
-                            self.selected_img = card_dict['img'].image
-                            #self.game_board.player_hand2.remove(card_dict)
+                            self.selected = card_dict
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)
