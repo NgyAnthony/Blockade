@@ -25,7 +25,6 @@ from pygame.locals import *
 from random import randrange
 import os
 import pygame
-from textbox import *
 
 # Import pygameMenu
 import pygameMenu

@@ -88,14 +88,15 @@ class Dealer:
     def __init__(self, side):
         """ This constructor sets up a database for Directions, Numbers, and probabilities of Numbers."""
         self.directions = ("DtL-DtR", "DtL-DtR-DbR-DbL", "DtL-T-DtR", "DtL-T-DtR-R-DbR-B-DbL-L",
-                           "L-R", "L-T-R", "L-T-R-B", "P", "PL", "PR", "R-DbR-B-DbL-L", "T", "T-B")
+                           "L-R", "L-T-R", "L-T-R-B", "R-DbR-B-DbL-L", "T", "T-B")
+        #"P", "PL", "PR"
+
         self.number_list = ("1", "1-2", "1-3", "2", "3", "4", "inf")
         # Probability of obtaining each number in order.
         self.p_number = [0.125, 0.15, 0.20, 0.20, 0.15, 0.125, 0.05]
         self.side = side
 
         self.getCard()
-
 
     def getCard(self):
         """Create a random Card"""
@@ -105,6 +106,7 @@ class Dealer:
 
 
 class Card:
+    """ This class creates a card with side, direction and number as attributes"""
     def __init__(self, side, direction, number):
         self.side = side
         self.direction = direction
@@ -113,6 +115,7 @@ class Card:
         self.makeReadable()
 
     def makeReadable(self):
+        """ This function allows create_sprite and create_handsprite to recognize the card/sprite association"""
         self.readable_path = "{}/{}/{}".format(self.side, self.direction, self.number)
 
     def __repr__(self):

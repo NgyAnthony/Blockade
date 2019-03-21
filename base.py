@@ -9,12 +9,16 @@ font = pygame.font.Font(None, 42)
 
 
 class CardSprite:
+    """ This class creates sprite objects which are then added to the right 'card'/'img' in create_sprite"""
     def __init__(self, img, target_posn):
         self.image = img
         self.target_posn = target_posn
         (x, y) = target_posn
         self.posn = (x, y)
-        self.rect = img.get_rect(topleft=(x,y))
+        self.rect = img.get_rect(topleft=(x, y))
+
+    def __repr__(self):
+        return 'CardSprite({}, {})'.format(self.image, self.posn)
 
     def update(self):
         pass
@@ -48,6 +52,8 @@ class Base:
         self.standard_colors = [(84, 175, 214), (214, 108, 84), (79, 79, 79)]  # Set up colors [blue, red, grey]
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
+        self.selected = None
+        self.selected_img = None
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
@@ -56,6 +62,7 @@ class Base:
         raise NotImplementedError()
 
     def load_folders(self, images=False, sounds=False, music=False):
+        """This function determines what files are opened."""
         if images:
             # Adjust the number of files in "Assets" dir.
             for side in self.player:
@@ -92,7 +99,7 @@ class Base:
             self.music = {str(i)[:-4]: "music/" + i for i in os.listdir("music") if os.path.isfile("music/" + i)}
 
     def create_sprite(self):
-        # Create a sprite object for each card, and populate grid_sprite.
+        """This function creates sprites from the playing board and put them into each 'img' value"""
         for row in range(len(self.game_board.playing_grid)):
             for col in range(len(self.game_board.playing_grid[row])):
                 readable = self.game_board.playing_grid[row][col]['card'].readable_path
@@ -106,6 +113,7 @@ class Base:
                         self.game_board.playing_grid[row][col]['img'] = a_card
 
     def create_handsprite(self, element):
+        """This function creates sprites from player hands and put them into each 'img' value"""
         if element == self.game_board.player_hand1:
             row = 0
         elif element == self.game_board.player_hand2:
@@ -121,6 +129,22 @@ class Base:
                                         (col * self.sq_sz_x + card_offset_x, row * self.sq_sz_y + card_offset_y))
 
                     element[col]['img'] = a_card
+
+    def find_path(self):
+        self.direct_indiv = ({'id': "L", 'pos': (-1, 0)},
+                             {'id': "T", 'pos': (0, 1)},
+                             {'id': "R", 'pos': (1, 0)},
+                             {'id': "B", 'pos': (0, -1)},
+
+                             {'id': "DtR", 'pos': (1, 1)},
+                             {'id': "DbR", 'pos': (-1, -1)},
+                             {'id': "DtL", 'pos': (-1, 1)},
+                             {'id': "DbL", 'pos': (-1, -1)},
+
+                             {'id': "P", 'pos': ((-1, 1), (1, 1))},
+                             {'id': "PL", 'pos': (-1, 1)},
+                             {'id': "PR", 'pos': (1, 1)})
+
 
     def main(self):
         keys = set()
@@ -146,10 +170,26 @@ class Base:
                     newbuttons.add(event.button)
                     mousepos = event.pos
                     pos = pygame.mouse.get_pos()
-                    for row in range(len(self.game_board.grid)):
-                        for col in range(len(self.game_board.grid[row])):
-                           if self.game_board.grid[row][col]['img'].rect.collidepoint(pos):
-                                print(self.game_board.grid[row][col]['card'])
+
+                    for row in range(len(self.game_board.playing_grid)):
+                        for col in range(len(self.game_board.playing_grid[row])):
+                            if self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                                self.game_board.playing_grid[row][col]['card'] = self.selected
+                                self.game_board.playing_grid[row][col]['img'].image = self.selected_img
+                                self.selected = None
+                                self.selected_img = None
+
+                    for card_dict in self.game_board.player_hand1:
+                        if card_dict['img'].rect.collidepoint(pos):
+                            self.selected = card_dict['card']
+                            self.selected_img = card_dict['img'].image
+                            #self.game_board.player_hand1.remove(card_dict)
+
+                    for card_dict in self.game_board.player_hand2:
+                        if card_dict['img'].rect.collidepoint(pos):
+                            self.selected = card_dict['card']
+                            self.selected_img = card_dict['img'].image
+                            #self.game_board.player_hand2.remove(card_dict)
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)

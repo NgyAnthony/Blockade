@@ -11,12 +11,13 @@ class Game(Base):
         self.create_sprite()
         self.create_handsprite(self.game_board.player_hand1)
         self.create_handsprite(self.game_board.player_hand2)
-        self.main()
+        self.main() # Launch the pygame while loop
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         pass
 
     def paint(self, surface):
+        """ This function draws the background and the cards on the board"""
         # Completely redraw the surface, starting with background.
         self.surface.fill((0, 200, 255))
 
@@ -33,10 +34,16 @@ class Game(Base):
                 the_square = (col * self.sq_sz_y, row * self.sq_sz_x, self.sq_sz_x, self.sq_sz_y)
                 self.surface.fill(self.standard_colors[c_indx], the_square)
 
+        for col in range(len(self.game_board.player_hand1)):
+            self.game_board.player_hand1[col]['img'].draw(self.surface)
+
         # Now that the board is drawn, draw the cards.
-        for row in range(len(self.game_board.grid)):
-            for col in range(len(self.game_board.grid[row])):
-                self.game_board.grid[row][col]['img'].draw(self.surface)
+        for row in range(len(self.game_board.playing_grid)):
+            for col in range(len(self.game_board.playing_grid[row])):
+                self.game_board.playing_grid[row][col]['img'].draw(self.surface)
+
+        for col in range(len(self.game_board.player_hand2)):
+            self.game_board.player_hand2[col]['img'].draw(self.surface)
 
 
 if __name__ == "__main__":
