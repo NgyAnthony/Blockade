@@ -11,7 +11,7 @@ class Game(Base):
         self.create_sprite()
         self.create_handsprite(self.game_board.player_hand1)
         self.create_handsprite(self.game_board.player_hand2)
-        self.main() # Launch the pygame while loop
+        self.main()  # Launch the pygame while loop
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         pass

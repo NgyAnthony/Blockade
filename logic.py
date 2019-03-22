@@ -53,11 +53,6 @@ class Board:
         picked_card = a.card
         player.append({'card': picked_card, 'img': None})
 
-    def addToBoard(self, position, card):
-        """ This function put the chosen card to the board."""
-        (x, y) = position
-        self.playing_grid[x][y].append(card)
-
     def initial_distribution(self):
         """ This function initialize the first set of cards"""
         # Distribute cards to the first player

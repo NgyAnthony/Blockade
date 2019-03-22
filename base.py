@@ -144,7 +144,6 @@ class Base:
                              {'id': "PL", 'pos': (-1, 1)},
                              {'id': "PR", 'pos': (1, 1)})
 
-
     def main(self):
         keys = set()
         buttons = set()
@@ -170,9 +169,12 @@ class Base:
                     mousepos = event.pos
                     pos = pygame.mouse.get_pos()
 
+                    # when click is on playing_grid
                     for row in range(len(self.game_board.playing_grid)):
                         for col in range(len(self.game_board.playing_grid[row])):
+                            # Look if there is a selected card in memory and if click is on playing_grid
                             if self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                                # modify parameters of card on board by card in memory
                                 self.game_board.playing_grid[row][col]['card'] = self.selected['card']
                                 self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
 
@@ -181,18 +183,22 @@ class Base:
                                 elif self.selected['card'].side == "Red":
                                     hand = self.game_board.player_hand2
 
-                                hand.remove(self.selected)
-                                self.game_board.addHand(hand)
-                                self.create_handsprite(hand)
-                                self.selected = None
+                                hand.remove(self.selected)  # remove used card from hand
+                                self.game_board.addHand(hand)  # call method addHand to get random card
+                                self.create_handsprite(hand)  # create new hand_sprite for the whole new hand
+                                self.selected = None  # reset select hand memory
 
+                    # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:
-                        if card_dict['img'].rect.collidepoint(pos):
+                        if card_dict['img'].rect.collidepoint(pos) and self.game_board.current_turn == "Blue":
                             self.selected = card_dict
+                            self.game_board.current_turn = "Red"
 
+                    # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
-                        if card_dict['img'].rect.collidepoint(pos):
+                        if card_dict['img'].rect.collidepoint(pos) and self.game_board.current_turn == "Red":
                             self.selected = card_dict
+                            self.game_board.current_turn = "Blue"
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)
