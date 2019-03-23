@@ -19,31 +19,44 @@ class Game(Base):
     def paint(self, surface):
         """ This function draws the background and the cards on the board"""
         # Completely redraw the surface, starting with background.
-        self.surface.fill((0, 200, 255))
+        self.surface.fill(self.standard_colors[2]['rgb'])
+        self.rect = pygame.Rect((self.surface_x / 2 - (config.BOARD_WIDTH / 2)), 0, 500, 800)
 
         # Draw a fresh background (board with player1 and 2 sides)
         for row in range(len(self.game_board.grid)):
             # Determine which color must be used for the background.
-            if row == 1:
-                c_indx = 0
-            elif row == 6:
-                c_indx = 1
-            else:
-                c_indx = 2
+            if config.PLAYER_SCREEN == "P1":
+                if row == 1:
+                    c_indx = 0
+                elif row == 6:
+                    c_indx = 1
+                else:
+                    c_indx = 2
+            if config.PLAYER_SCREEN == "P2":
+                if row == 1:
+                    c_indx = 1
+                elif row == 6:
+                    c_indx = 0
+                else:
+                    c_indx = 2
             for col in range(len(self.game_board.grid[row])):
-                the_square = (col * self.sq_sz_y, row * self.sq_sz_x, self.sq_sz_x, self.sq_sz_y)
-                self.surface.fill(self.standard_colors[c_indx], the_square)
+                the_square = (col * self.sq_sz_y + (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                              row * self.sq_sz_x, self.sq_sz_x, self.sq_sz_y)
+                self.surface.fill(self.standard_colors[c_indx]['rgb'], the_square)
+
+        # Now that the board is drawn, draw the cards.
 
         for col in range(len(self.game_board.player_hand1)):
             self.game_board.player_hand1[col]['img'].draw(self.surface)
 
-        # Now that the board is drawn, draw the cards.
         for row in range(len(self.game_board.playing_grid)):
             for col in range(len(self.game_board.playing_grid[row])):
                 self.game_board.playing_grid[row][col]['img'].draw(self.surface)
 
         for col in range(len(self.game_board.player_hand2)):
             self.game_board.player_hand2[col]['img'].draw(self.surface)
+
+        pygame.draw.rect(self.surface, self.standard_colors[3]['rgb'], self.rect, 5)
 
 
 if __name__ == "__main__":

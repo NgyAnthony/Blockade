@@ -10,18 +10,33 @@ font = pygame.font.Font(None, 42)
 
 class CardSprite:
     """ This class creates sprite objects which are then added to the right 'card'/'img' in create_sprite"""
-    def __init__(self, img, target_posn):
+    def __init__(self, img, target_posn, sq_sz_x, sq_sz_y, side, hand):
         self.image = img
         self.target_posn = target_posn
+        self.sq_sz_x = sq_sz_x
+        self.sq_sz_y = sq_sz_y
+        self.hand = hand
+        self.side = side
         (x, y) = target_posn
         self.posn = (x, y)
         self.rect = img.get_rect(topleft=(x, y))
+        self.filp_img()
 
     def __repr__(self):
         return 'CardSprite({}, {})'.format(self.image, self.posn)
 
-    def update(self):
-        pass
+    def filp_img(self):
+        if config.PLAYER_SCREEN == "P1" and "Blue" in self.side:
+            if self.hand:
+                self.image = pygame.transform.scale(pygame.image.load("Other_assets/blue_hidden.png"), (85, 85))
+            else:
+                self.image = pygame.transform.flip(self.image, False, True)
+
+        elif config.PLAYER_SCREEN == "P2" and "Red" in self.side:
+            if self.hand:
+                self.image = pygame.transform.scale(pygame.image.load("Other_assets/red_hidden.png"), (85, 85))
+            else:
+                self.image = pygame.transform.flip(self.image, False, True)
 
     def draw(self, target_surface):
         target_surface.blit(self.image, self.posn)
@@ -46,10 +61,14 @@ class Base:
         (self.ASSETS_PATH, self.ASSETS_ACCESS, self.ASSETS_IDnPATH) = ([], [], [])
         (self.n_col, self.n_row) = (len(self.game_board.grid[0]), len(self.game_board.grid))  # This is an n_col * n_row board.
         (self.surface_x, self.surface_y) = (self.window.get_size())
-        (self.sq_sz_x, self.sq_sz_y) = (self.surface_x // self.n_col, self.surface_y // self.n_row)
-        (self.surface_x, self.surface_y) = (self.n_col * self.sq_sz_x, self.n_row * self.sq_sz_y)
 
-        self.standard_colors = [(84, 175, 214), (214, 108, 84), (79, 79, 79)]  # Set up colors [blue, red, grey]
+        #(self.sq_sz_x, self.sq_sz_y) = (config.CARD_WIDTH, config.CARD_HEIGHT)
+        (self.sq_sz_x, self.sq_sz_y) = (config.BOARD_WIDTH // self.n_col, config.BOARD_HEIGHT // self.n_row)
+
+        self.standard_colors = [{'color': 'Blue', 'rgb': (84, 175, 214)},
+                                {'color': 'Red', 'rgb': (214, 108, 84)},
+                                {'color': 'Grey', 'rgb': (79, 79, 79)},
+                                {'color': 'White', 'rgb': (236, 240, 241)}]  # Set up colors [blue, red, grey]
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
@@ -83,8 +102,7 @@ class Base:
             # Load every images with independant readable variables from ASSETS_ACCESS
             for x in range(len(self.ASSETS_ACCESS)):
                 current_access = self.ASSETS_ACCESS[x]  # Readable path as variable
-                current_access = pygame.transform.scale(pygame.image.load(self.ASSETS_PATH[x]),
-                                                        (85, 85))  # Open images with previous variable as argument
+                current_access = pygame.transform.scale(pygame.image.load(self.ASSETS_PATH[x]), (85, 85))  # Open images with previous variable as argument
                 img_dict = {
                     'id': self.ASSETS_ACCESS[x],
                     'img': current_access
@@ -99,6 +117,7 @@ class Base:
 
     def create_sprite(self):
         """This function creates sprites from the playing board and put them into each 'img' value"""
+        hand = False
         for row in range(len(self.game_board.playing_grid)):
             for col in range(len(self.game_board.playing_grid[row])):
                 readable = self.game_board.playing_grid[row][col]['card'].readable_path
@@ -107,16 +126,27 @@ class Base:
                         card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
                         card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
 
-                        a_card = CardSprite(id_image.get('img'),
-                                            (col * self.sq_sz_x + card_offset_x, (row+1) * self.sq_sz_y + card_offset_y))
+                        a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
+                                                                  (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                                                                  (row+1) * self.sq_sz_y + card_offset_y),
+                                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+
                         self.game_board.playing_grid[row][col]['img'] = a_card
 
     def create_handsprite(self, element):
         """This function creates sprites from player hands and put them into each 'img' value"""
-        if element == self.game_board.player_hand1:
-            row = 0
-        elif element == self.game_board.player_hand2:
-            row = 7
+        hand = True
+        if config.PLAYER_SCREEN == "P1":
+            if element == self.game_board.player_hand1:
+                row = 0
+            elif element == self.game_board.player_hand2:
+                row = 7
+
+        elif config.PLAYER_SCREEN == "P2":
+            if element == self.game_board.player_hand1:
+                row = 7
+            elif element == self.game_board.player_hand2:
+                row = 0
 
         for col in range(len(element)):
             readable = element[col]['card'].readable_path
@@ -125,7 +155,8 @@ class Base:
                     card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
                     card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
                     a_card = CardSprite(id_image.get('img'),
-                                        (col * self.sq_sz_x + card_offset_x, row * self.sq_sz_y + card_offset_y))
+                                        (col * self.sq_sz_x + card_offset_x + (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                                         row * self.sq_sz_y + card_offset_y), self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
 
                     element[col]['img'] = a_card
 
@@ -190,13 +221,15 @@ class Base:
 
                     # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:
-                        if card_dict['img'].rect.collidepoint(pos) and self.game_board.current_turn == "Blue":
+                        if card_dict['img'].rect.collidepoint(pos) and \
+                                self.game_board.current_turn == "Blue" and config.PLAYER_SCREEN == "P2":
                             self.selected = card_dict
                             self.game_board.current_turn = "Red"
 
                     # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
-                        if card_dict['img'].rect.collidepoint(pos) and self.game_board.current_turn == "Red":
+                        if card_dict['img'].rect.collidepoint(pos) and \
+                                self.game_board.current_turn == "Red" and config.PLAYER_SCREEN == "P1":
                             self.selected = card_dict
                             self.game_board.current_turn = "Blue"
 
@@ -215,7 +248,7 @@ class Base:
                     keys.discard(event.key)
 
             self.logic(keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta)
-            self.paint(self.window)
+            self.paint(self.surface)
             self.window.blit(font.render("FPS: %i" % self.clock.get_fps(), True, (255, 255, 255)), (0, 0))
 
             pygame.display.update()
