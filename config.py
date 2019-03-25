@@ -10,6 +10,10 @@ CARD_HEIGHT = 100
 SCREEN_TITLE = "Blockade"
 # If true, default width and height will be ignored and overridden
 SCREEN_FULLSCREEN = False
+
 PLAYER_SCREEN = "P2"
+COLORBLIND = ["NO"]
+DIFFICULTY = ["EASY"]
+SERVER = ['5.135.29.120:4000']
 
 FRAMERATE = 5

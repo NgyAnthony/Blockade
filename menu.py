@@ -25,6 +25,7 @@ from pygame.locals import *
 from random import randrange
 import os
 import pygame
+import config
 
 # Import pygameMenu
 import pygameMenu
@@ -42,7 +43,7 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 FPS = 3
 MENU_BACKGROUND_COLOR = (0, 173, 238)
-WINDOW_SIZE = (1366, 768)
+WINDOW_SIZE = (1024, 800)
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -56,14 +57,13 @@ clock = pygame.time.Clock()
 dt = 1 / FPS
 
 # Global variables
-DIFFICULTY = ['EASY']
-COLORBLIND = ['NO']
-SERVER = ['5.135.29.120:4000']
+config.DIFFICULTY = ['EASY']
+config.COLORBLIND = ['NO']
+config.SERVER = ['5.135.29.120:4000']
 
 
 
 # -----------------------------------------------------------------------------
-
 
 def change_difficulty(d):
     """
@@ -72,7 +72,7 @@ def change_difficulty(d):
     :return:
     """
     print('Selected difficulty: {0}'.format(d))
-    DIFFICULTY[0] = d
+    config.DIFFICULTY[0] = d
 
 
 def change_color(c):
@@ -83,7 +83,8 @@ def change_color(c):
     """
 
     print('Colorblind : {0}'.format(c))
-    COLORBLIND[0] = c
+    config.COLORBLIND[0] = c
+
 
 def change_server(s):
     """
@@ -93,7 +94,7 @@ def change_server(s):
     """
 
     print('Server : {0}'.format(s))
-    SERVER[0] = s
+    config.SERVER[0] = s
 
 
 

@@ -70,6 +70,9 @@ class Base:
                                 {'color': 'Grey', 'rgb': (79, 79, 79)},
                                 {'color': 'White', 'rgb': (236, 240, 241)}]  # Set up colors [blue, red, grey]
 
+        self.colorblind = [{'color': 'Blue', 'rgb': (61, 3, 255)}, {'color': 'Red', 'rgb': (237, 0, 0)},
+                           {'color': 'Grey', 'rgb': (79, 79, 79)}, {'color': 'White', 'rgb': (236, 240, 241)}]
+
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
 
@@ -118,20 +121,38 @@ class Base:
     def create_sprite(self):
         """This function creates sprites from the playing board and put them into each 'img' value"""
         hand = False
-        for row in range(len(self.game_board.playing_grid)):
-            for col in range(len(self.game_board.playing_grid[row])):
-                readable = self.game_board.playing_grid[row][col]['card'].readable_path
-                for id_image in self.ASSETS_IDnPATH:
-                    if id_image.get('id') == readable:
-                        card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
-                        card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
 
-                        a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
-                                                                  (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
-                                                                  (row+1) * self.sq_sz_y + card_offset_y),
-                                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+        if config.PLAYER_SCREEN == "P1":
+            for row in (range(len(self.game_board.playing_grid))):
+                for col in range(len(self.game_board.playing_grid[row])):
+                    readable = self.game_board.playing_grid[row][col]['card'].readable_path
+                    for id_image in self.ASSETS_IDnPATH:
+                        if id_image.get('id') == readable:
+                            card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
+                            card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
 
-                        self.game_board.playing_grid[row][col]['img'] = a_card
+                            a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
+                                                                      (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                                                                      (row + 1) * self.sq_sz_y + card_offset_y),
+                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+
+                            self.game_board.playing_grid[row][col]['img'] = a_card
+
+        elif config.PLAYER_SCREEN == "P2":
+            for row in (range(len(self.game_board.playing_grid) - 1, -1, -1)):
+                for col in range(len(self.game_board.playing_grid[row])):
+                    readable = self.game_board.playing_grid[row][col]['card'].readable_path
+                    for id_image in self.ASSETS_IDnPATH:
+                        if id_image.get('id') == readable:
+                            card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
+                            card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
+
+                            a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
+                                                                      (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                                                                      (row + 1) * self.sq_sz_y + card_offset_y),
+                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+
+                            self.game_board.playing_grid[row][col]['img'] = a_card
 
     def create_handsprite(self, element):
         """This function creates sprites from player hands and put them into each 'img' value"""

@@ -42,16 +42,25 @@ class Game(Base):
             for col in range(len(self.game_board.grid[row])):
                 the_square = (col * self.sq_sz_y + (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
                               row * self.sq_sz_x, self.sq_sz_x, self.sq_sz_y)
-                self.surface.fill(self.standard_colors[c_indx]['rgb'], the_square)
+                if config.COLORBLIND[0] == "NO":
+                    self.surface.fill(self.standard_colors[c_indx]['rgb'], the_square)
+                else:
+                    self.surface.fill(self.colorblind[c_indx]['rgb'], the_square)
 
         # Now that the board is drawn, draw the cards.
 
         for col in range(len(self.game_board.player_hand1)):
             self.game_board.player_hand1[col]['img'].draw(self.surface)
 
-        for row in range(len(self.game_board.playing_grid)):
-            for col in range(len(self.game_board.playing_grid[row])):
-                self.game_board.playing_grid[row][col]['img'].draw(self.surface)
+        if config.PLAYER_SCREEN == "P1":
+            for row in range(len(self.game_board.playing_grid)):
+                for col in range(len(self.game_board.playing_grid[row])):
+                    self.game_board.playing_grid[row][col]['img'].draw(self.surface)
+
+        elif config.PLAYER_SCREEN == "P2":
+            for row in range(len(self.game_board.playing_grid) -1, -1, -1):
+                for col in range(len(self.game_board.playing_grid[row])):
+                    self.game_board.playing_grid[row][col]['img'].draw(self.surface)
 
         for col in range(len(self.game_board.player_hand2)):
             self.game_board.player_hand2[col]['img'].draw(self.surface)
