@@ -7,6 +7,8 @@ class Game(Base):
     def __init__(self):
         Base.__init__(self, config.SCREEN_TITLE, config.SCREEN_WIDTH, config.SCREEN_HEIGHT, config.FRAMERATE, config.SCREEN_FULLSCREEN)
         self.load_folders(images=True)
+        if p.PLAYER == "P2":
+            self.reverse_playingboard()
         self.create_sprite()
         self.create_handsprite(self.game_board.player_hand1)
         self.create_handsprite(self.game_board.player_hand2)
@@ -43,20 +45,14 @@ class Game(Base):
                 else:
                     self.surface.fill(self.colorblind[c_indx]['rgb'], the_square)
 
-        # Now that the board is drawn, draw the cards.
+        # Now that the background is coloured, draw the cards.
 
         for col in range(len(self.game_board.player_hand1)):
             self.game_board.player_hand1[col]['img'].draw(self.surface)
 
-        if p.PLAYER == "P1":
-            for row in range(len(self.game_board.playing_grid)):
-                for col in range(len(self.game_board.playing_grid[row])):
-                    self.game_board.playing_grid[row][col]['img'].draw(self.surface)
-
-        elif p.PLAYER == "P2":
-            for row in range(len(self.game_board.playing_grid) -1, -1, -1):
-                for col in range(len(self.game_board.playing_grid[row])):
-                    self.game_board.playing_grid[row][col]['img'].draw(self.surface)
+        for row in range(len(self.game_board.playing_grid)):
+            for col in range(len(self.game_board.playing_grid[row])):
+                self.game_board.playing_grid[row][col]['img'].draw(self.surface)
 
         for col in range(len(self.game_board.player_hand2)):
             self.game_board.player_hand2[col]['img'].draw(self.surface)

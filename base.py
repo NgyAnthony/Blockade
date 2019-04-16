@@ -79,6 +79,7 @@ class Base:
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
+        self.reversed_playingboard = [[],[],[],[],[],[]]
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
@@ -121,42 +122,41 @@ class Base:
                            os.path.isfile("sounds/" + i)}
         if music:
             self.music = {str(i)[:-4]: "music/" + i for i in os.listdir("music") if os.path.isfile("music/" + i)}
+    # Create a new playing board with the cards in the the reversed order
+    # Generate the sprites normally
+    # Display them
+
+    # But then when P2 moves on the board and sends his own board the board must be reversed again so that P1
+    # can see it normal. There shouldn't be any conflict.
+    # Okay, go.
+
+    def reverse_playingboard(self):
+        xrow = 0
+        for row in range(len(self.game_board.playing_grid) -1, -1, -1):
+            for col in range(len(self.game_board.playing_grid[row]) -1, -1, -1):
+                standard_dict = self.game_board.playing_grid[row][col]
+                self.reversed_playingboard[xrow].append(standard_dict)
+            xrow += 1
+        self.game_board.playing_grid = self.reversed_playingboard
 
     def create_sprite(self):
         """This function creates sprites from the playing board and put them into each 'img' value"""
         hand = False
 
-        if p.PLAYER == "P1":
-            for row in (range(len(self.game_board.playing_grid))):
-                for col in range(len(self.game_board.playing_grid[row])):
-                    readable = self.game_board.playing_grid[row][col]['card'].readable_path
-                    for id_image in self.ASSETS_IDnPATH:
-                        if id_image.get('id') == readable:
-                            card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
-                            card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
+        for row in range(len(self.game_board.playing_grid)):
+            for col in range(len(self.game_board.playing_grid[row])):
+                readable = self.game_board.playing_grid[row][col]['card'].readable_path
+                for id_image in self.ASSETS_IDnPATH:
+                    if id_image.get('id') == readable:
+                        card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
+                        card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
 
-                            a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
-                                                                      (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
-                                                                      (row + 1) * self.sq_sz_y + card_offset_y),
-                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+                        a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
+                                                                  (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
+                                                                  (row + 1) * self.sq_sz_y + card_offset_y),
+                                            self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
+                        self.game_board.playing_grid[row][col]['img'] = a_card
 
-                            self.game_board.playing_grid[row][col]['img'] = a_card
-
-        elif p.PLAYER == "P2":
-            for row in (range(len(self.game_board.playing_grid) - 1, -1, -1)):
-                for col in range(len(self.game_board.playing_grid[row])):
-                    readable = self.game_board.playing_grid[row][col]['card'].readable_path
-                    for id_image in self.ASSETS_IDnPATH:
-                        if id_image.get('id') == readable:
-                            card_offset_x = (self.sq_sz_x - id_image.get('img').get_width()) // 2
-                            card_offset_y = (self.sq_sz_y - id_image.get('img').get_width()) // 2
-
-                            a_card = CardSprite(id_image.get('img'), (col * self.sq_sz_x + card_offset_x +
-                                                                      (self.surface_x / 2 - (config.BOARD_WIDTH / 2)),
-                                                                      (row + 1) * self.sq_sz_y + card_offset_y),
-                                                self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
-
-                            self.game_board.playing_grid[row][col]['img'] = a_card
 
     def create_handsprite(self, element):
         """This function creates sprites from player hands and put them into each 'img' value"""
