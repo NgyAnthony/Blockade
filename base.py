@@ -2,10 +2,14 @@ import pygame
 import os
 import config
 import sys
+from network import Network
 
 pygame.init()  # Prepare the PyGame module for use
 
 font = pygame.font.Font(None, 42)
+
+n = Network()
+p = n.getP()
 
 
 class CardSprite:
@@ -26,13 +30,13 @@ class CardSprite:
         return 'CardSprite({}, {})'.format(self.image, self.posn)
 
     def filp_img(self):
-        if config.PLAYER_SCREEN == "P1" and "Blue" in self.side:
+        if p.PLAYER == "P1" and "Blue" in self.side:
             if self.hand:
                 self.image = pygame.transform.scale(pygame.image.load("Other_assets/blue_hidden.png"), (85, 85))
             else:
                 self.image = pygame.transform.flip(self.image, False, True)
 
-        elif config.PLAYER_SCREEN == "P2" and "Red" in self.side:
+        elif p.PLAYER == "P2" and "Red" in self.side:
             if self.hand:
                 self.image = pygame.transform.scale(pygame.image.load("Other_assets/red_hidden.png"), (85, 85))
             else:
@@ -43,7 +47,7 @@ class CardSprite:
 
 
 class Base:
-    def __init__(self, title, width, height, framerate, fullscreen, game_board):
+    def __init__(self, title, width, height, framerate, fullscreen):
         if not fullscreen:
             self.window = pygame.display.set_mode((width, height))
         else:
@@ -54,7 +58,7 @@ class Base:
 
         self.clock = pygame.time.Clock()
         self.framerate = framerate
-        self.game_board = game_board
+        self.game_board = p.BOARD
 
         self.player = ("Blue", "Red")
         self.DIRECTIONS_FILES = ("1.png", "1-2.png", "1-3.png", "2.png", "3.png", "4.png", "inf.png")
@@ -83,16 +87,16 @@ class Base:
         raise NotImplementedError()
 
     def load_folders(self, images=False, sounds=False, music=False):
-        """This function determines what files are opened."""
+        """ Load every assets."""
         if images:
             # Adjust the number of files in "Assets" dir.
             for side in self.player:
-                for r, d, files in os.walk("Assets/{} Tiles".format(side)):
-                    for file in files:  # Analyze every "file" name in the list of "files"
+                for r, d, directory in os.walk("Assets/{} Tiles".format(side)):
+                    for file in directory:  # Analyze every "file" name in the directory
                         if file not in self.DIRECTIONS_FILES:
-                            files.remove(file)  # Remove any parasite
-                    for file in files:
-                        self.ASSETS_PATH.append(str(r + "/" + file))
+                            directory.remove(file)  # Remove any parasite
+                    for file in directory:
+                        self.ASSETS_PATH.append(str(r + "/" + file))  # Append the path to the file to a list.
 
             # Transform 'Assets/Blue Tiles/L-T-R-B/1x/inf.png' into 'Blue Tiles/L-T-R-B/inf'
             for asset in self.ASSETS_PATH:
@@ -102,7 +106,7 @@ class Base:
                 readable = "{}/{}/{}".format(filter_side, direction, number)
                 self.ASSETS_ACCESS.append(readable)
 
-            # Load every images with independant readable variables from ASSETS_ACCESS
+            # Load every images with independent readable variables from ASSETS_ACCESS
             for x in range(len(self.ASSETS_ACCESS)):
                 current_access = self.ASSETS_ACCESS[x]  # Readable path as variable
                 current_access = pygame.transform.scale(pygame.image.load(self.ASSETS_PATH[x]), (85, 85))  # Open images with previous variable as argument
@@ -122,7 +126,7 @@ class Base:
         """This function creates sprites from the playing board and put them into each 'img' value"""
         hand = False
 
-        if config.PLAYER_SCREEN == "P1":
+        if p.PLAYER == "P1":
             for row in (range(len(self.game_board.playing_grid))):
                 for col in range(len(self.game_board.playing_grid[row])):
                     readable = self.game_board.playing_grid[row][col]['card'].readable_path
@@ -138,7 +142,7 @@ class Base:
 
                             self.game_board.playing_grid[row][col]['img'] = a_card
 
-        elif config.PLAYER_SCREEN == "P2":
+        elif p.PLAYER == "P2":
             for row in (range(len(self.game_board.playing_grid) - 1, -1, -1)):
                 for col in range(len(self.game_board.playing_grid[row])):
                     readable = self.game_board.playing_grid[row][col]['card'].readable_path
@@ -157,13 +161,13 @@ class Base:
     def create_handsprite(self, element):
         """This function creates sprites from player hands and put them into each 'img' value"""
         hand = True
-        if config.PLAYER_SCREEN == "P1":
+        if p.PLAYER == "P1":
             if element == self.game_board.player_hand1:
                 row = 0
             elif element == self.game_board.player_hand2:
                 row = 7
 
-        elif config.PLAYER_SCREEN == "P2":
+        elif p.PLAYER == "P2":
             if element == self.game_board.player_hand1:
                 row = 7
             elif element == self.game_board.player_hand2:
@@ -180,21 +184,6 @@ class Base:
                                          row * self.sq_sz_y + card_offset_y), self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
 
                     element[col]['img'] = a_card
-
-    def find_path(self):
-        self.direct_indiv = ({'id': "L", 'pos': (-1, 0)},
-                             {'id': "T", 'pos': (0, 1)},
-                             {'id': "R", 'pos': (1, 0)},
-                             {'id': "B", 'pos': (0, -1)},
-
-                             {'id': "DtR", 'pos': (1, 1)},
-                             {'id': "DbR", 'pos': (-1, -1)},
-                             {'id': "DtL", 'pos': (-1, 1)},
-                             {'id': "DbL", 'pos': (-1, -1)},
-
-                             {'id': "P", 'pos': ((-1, 1), (1, 1))},
-                             {'id': "PL", 'pos': (-1, 1)},
-                             {'id': "PR", 'pos': (1, 1)})
 
     def main(self):
         keys = set()
@@ -243,14 +232,14 @@ class Base:
                     # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:
                         if card_dict['img'].rect.collidepoint(pos) and \
-                                self.game_board.current_turn == "Blue" and config.PLAYER_SCREEN == "P2":
+                                self.game_board.current_turn == "Blue" and p.PLAYER == "P2":
                             self.selected = card_dict
                             self.game_board.current_turn = "Red"
 
                     # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
                         if card_dict['img'].rect.collidepoint(pos) and \
-                                self.game_board.current_turn == "Red" and config.PLAYER_SCREEN == "P1":
+                                self.game_board.current_turn == "Red" and p.PLAYER == "P1":
                             self.selected = card_dict
                             self.game_board.current_turn = "Blue"
 
@@ -268,7 +257,6 @@ class Base:
                 if event.type == pygame.KEYUP:
                     keys.discard(event.key)
 
-            self.logic(keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta)
             self.paint(self.surface)
             self.window.blit(font.render("FPS: %i" % self.clock.get_fps(), True, (255, 255, 255)), (0, 0))
 

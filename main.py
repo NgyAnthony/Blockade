@@ -1,20 +1,16 @@
 from base import *
-from logic import *
 import sys
 sys.dont_write_bytecode = True
 
 
 class Game(Base):
     def __init__(self):
-        Base.__init__(self, config.SCREEN_TITLE, config.SCREEN_WIDTH, config.SCREEN_HEIGHT, config.FRAMERATE, config.SCREEN_FULLSCREEN, Board())
+        Base.__init__(self, config.SCREEN_TITLE, config.SCREEN_WIDTH, config.SCREEN_HEIGHT, config.FRAMERATE, config.SCREEN_FULLSCREEN)
         self.load_folders(images=True)
         self.create_sprite()
         self.create_handsprite(self.game_board.player_hand1)
         self.create_handsprite(self.game_board.player_hand2)
         self.main()  # Launch the pygame while loop
-
-    def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
-        pass
 
     def paint(self, surface):
         """ This function draws the background and the cards on the board"""
@@ -25,14 +21,14 @@ class Game(Base):
         # Draw a fresh background (board with player1 and 2 sides)
         for row in range(len(self.game_board.grid)):
             # Determine which color must be used for the background.
-            if config.PLAYER_SCREEN == "P1":
+            if p.PLAYER == "P1":
                 if row == 1:
                     c_indx = 0
                 elif row == 6:
                     c_indx = 1
                 else:
                     c_indx = 2
-            if config.PLAYER_SCREEN == "P2":
+            if p.PLAYER == "P2":
                 if row == 1:
                     c_indx = 1
                 elif row == 6:
@@ -52,12 +48,12 @@ class Game(Base):
         for col in range(len(self.game_board.player_hand1)):
             self.game_board.player_hand1[col]['img'].draw(self.surface)
 
-        if config.PLAYER_SCREEN == "P1":
+        if p.PLAYER == "P1":
             for row in range(len(self.game_board.playing_grid)):
                 for col in range(len(self.game_board.playing_grid[row])):
                     self.game_board.playing_grid[row][col]['img'].draw(self.surface)
 
-        elif config.PLAYER_SCREEN == "P2":
+        elif p.PLAYER == "P2":
             for row in range(len(self.game_board.playing_grid) -1, -1, -1):
                 for col in range(len(self.game_board.playing_grid[row])):
                     self.game_board.playing_grid[row][col]['img'].draw(self.surface)
