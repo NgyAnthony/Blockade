@@ -19,6 +19,7 @@ FRAMERATE = 5
 
 
 class Config:
-    def __init__(self, PLAYER, BOARD):
+    def __init__(self, PLAYER, BOARD, TURN):
         self.PLAYER = PLAYER
         self.BOARD = BOARD
+        self.TURN = TURN

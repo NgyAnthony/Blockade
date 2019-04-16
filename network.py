@@ -1,6 +1,5 @@
 import socket
 import pickle
-import zlib
 
 
 class Network:
@@ -17,13 +16,17 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return pickle.loads(self.client.recv(2048*10))
+            return pickle.loads(self.client.recv(2048*15))
         except:
             pass
 
     def send(self, data):
         try:
             self.client.send(pickle.dumps(data))
-            return pickle.loads(self.client.recv(2048*10))
+            return pickle.loads(self.client.recv(2048*15))
         except socket.error as e:
             print(e)
+"""n = Network()
+a = n.getP()
+print(a)"""
+

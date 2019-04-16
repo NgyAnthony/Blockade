@@ -10,7 +10,7 @@ font = pygame.font.Font(None, 42)
 
 n = Network()
 p = n.getP()
-
+print(p.TURN) #gotta update it or the turn never ends yea ok
 
 class CardSprite:
     """ This class creates sprite objects which are then added to the right 'card'/'img' in create_sprite"""
@@ -231,15 +231,13 @@ class Base:
 
                     # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:
-                        if card_dict['img'].rect.collidepoint(pos) and \
-                                self.game_board.current_turn == "Blue" and p.PLAYER == "P2":
+                        if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P2" and p.PLAYER == "P2":
                             self.selected = card_dict
                             self.game_board.current_turn = "Red"
 
                     # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
-                        if card_dict['img'].rect.collidepoint(pos) and \
-                                self.game_board.current_turn == "Red" and p.PLAYER == "P1":
+                        if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P1" and p.PLAYER == "P1":
                             self.selected = card_dict
                             self.game_board.current_turn = "Blue"
 
