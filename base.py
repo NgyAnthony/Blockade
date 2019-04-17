@@ -3,6 +3,8 @@ import os
 import config
 import sys
 from network import Network
+from config import AskBoard
+import time
 
 pygame.init()  # Prepare the PyGame module for use
 
@@ -10,7 +12,7 @@ font = pygame.font.Font(None, 42)
 
 n = Network()
 p = n.getP()
-print(p.TURN) #gotta update it or the turn never ends yea ok
+
 
 class CardSprite:
     """ This class creates sprite objects which are then added to the right 'card'/'img' in create_sprite"""
@@ -122,13 +124,6 @@ class Base:
                            os.path.isfile("sounds/" + i)}
         if music:
             self.music = {str(i)[:-4]: "music/" + i for i in os.listdir("music") if os.path.isfile("music/" + i)}
-    # Create a new playing board with the cards in the the reversed order
-    # Generate the sprites normally
-    # Display them
-
-    # But then when P2 moves on the board and sends his own board the board must be reversed again so that P1
-    # can see it normal. There shouldn't be any conflict.
-    # Okay, go.
 
     def reverse_playingboard(self):
         xrow = 0
@@ -138,6 +133,7 @@ class Base:
                 self.reversed_playingboard[xrow].append(standard_dict)
             xrow += 1
         self.game_board.playing_grid = self.reversed_playingboard
+        self.reversed_playingboard = [[],[],[],[],[],[]]
 
     def create_sprite(self):
         """This function creates sprites from the playing board and put them into each 'img' value"""
@@ -185,12 +181,25 @@ class Base:
 
                     element[col]['img'] = a_card
 
+    def erase_sprite(self):
+        for row in range(len(self.game_board.playing_grid)):
+            for col in range(len(self.game_board.playing_grid[row])):
+                self.game_board.playing_grid[row][col]['img'] = None
+
+        for col in range(len(self.game_board.player_hand1)):
+            self.game_board.player_hand1[col]['img'] = None
+            self.game_board.player_hand2[col]['img'] = None
+
     def main(self):
         keys = set()
         buttons = set()
         mousepos = (1, 1)
 
         while True:
+            asked_board = n.send(AskBoard(p.PLAYER))
+            p.BOARD = asked_board.BOARD
+            p.TURN = asked_board.TURN
+            print(p.TURN)
             self.clock.tick(self.framerate)
             delta = float(self.clock.get_time()) / float(self.framerate)
 
@@ -219,6 +228,7 @@ class Base:
                                 self.game_board.playing_grid[row][col]['card'] = self.selected['card']
                                 self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
 
+                                # identify which hand was played
                                 if self.selected['card'].side == "Blue":
                                     hand = self.game_board.player_hand1
                                 elif self.selected['card'].side == "Red":
@@ -228,6 +238,26 @@ class Base:
                                 self.game_board.addHand(hand)  # call method addHand to get random card
                                 self.create_handsprite(hand)  # create new hand_sprite for the whole new hand
                                 self.selected = None  # reset select hand memory
+                                if p.TURN == "P1":
+                                    p.TURN = "P2"
+                                elif p.TURN == "P2":
+                                    p.TURN = "P1"
+
+                                if p.PLAYER == "P2":
+                                    self.erase_sprite()
+                                    self.reverse_playingboard()
+                                    p2 = n.send(p)
+                                    self.reverse_playingboard()
+                                    self.create_sprite()
+                                    self.create_handsprite(self.game_board.player_hand1)
+                                    self.create_handsprite(self.game_board.player_hand2)
+
+                                elif p.PLAYER == "P1":
+                                    self.erase_sprite()
+                                    p2 = n.send(p)
+                                    self.create_sprite()
+                                    self.create_handsprite(self.game_board.player_hand1)
+                                    self.create_handsprite(self.game_board.player_hand2)
 
                     # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:

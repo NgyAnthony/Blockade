@@ -23,3 +23,8 @@ class Config:
         self.PLAYER = PLAYER
         self.BOARD = BOARD
         self.TURN = TURN
+
+
+class AskBoard:
+    def __init__(self, ask):
+        self.ask = ask

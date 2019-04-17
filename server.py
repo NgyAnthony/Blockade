@@ -29,25 +29,44 @@ currentPlayer = 0
 
 def threaded_client(conn, player):
     global currentPlayer
-    conn.send(pickle.dumps(players[player]))
+    conn.sendall(pickle.dumps(players[player]))
     while True:
         try:
-            data = pickle.loads(conn.recv(2048*15))
-            players[player] = data
+            data = pickle.loads(conn.recv(2048*20))
 
             if not data:
                 print("Disconnected")
                 break
-            else:
+
+            elif data.__class__.__name__ == "AskBoard":
                 if player == 1:
+                    reply = players[1]
+                elif player == 0:
                     reply = players[0]
-                else:
+
+                print("Updating board...")
+                print("- Received: ", data)
+                print("- Sending : ", reply)
+                conn.sendall(pickle.dumps(reply))
+
+            else:
+                players[player] = data
+
+                if player == 1:
+                    players[0].TURN = players[1].TURN
+                    players[0].BOARD = players[1].BOARD
+                    reply = players[0]
+                elif player == 0:
+                    players[1].TURN = players[0].TURN
+                    players[1].BOARD = players[0].BOARD
                     reply = players[1]
 
-                print("Received: ", data)
-                print("Sending : ", reply)
+                print("Making a move...")
+                print("- Received: ", data)
+                print("- Sending : ", reply)
+                conn.sendall(pickle.dumps(reply))
 
-            conn.sendall(pickle.dumps(reply))
+
         except:
             break
 
@@ -62,6 +81,3 @@ while True:
 
     start_new_thread(threaded_client, (conn, currentPlayer))
     currentPlayer += 1
-
-#TODO : Send current-player back to the server AND send back the board but reverse the thing
-#ねたい
