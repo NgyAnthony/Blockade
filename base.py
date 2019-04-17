@@ -199,7 +199,13 @@ class Base:
             asked_board = n.send(AskBoard(p.PLAYER))
             p.BOARD = asked_board.BOARD
             p.TURN = asked_board.TURN
-            print(p.TURN)
+            self.game_board.playing_grid = p.BOARD.playing_grid
+            if p.PLAYER == "P2":
+                self.reverse_playingboard()
+            self.create_sprite()
+            self.create_handsprite(self.game_board.player_hand1)
+            self.create_handsprite(self.game_board.player_hand2)
+
             self.clock.tick(self.framerate)
             delta = float(self.clock.get_time()) / float(self.framerate)
 
