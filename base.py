@@ -82,6 +82,7 @@ class Base:
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
         self.reversed_playingboard = [[],[],[],[],[],[]]
+        self.roads = []
 
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
@@ -153,7 +154,6 @@ class Base:
                                             self.sq_sz_x, self.sq_sz_y, id_image.get('id'), hand)
                         self.game_board.playing_grid[row][col]['img'] = a_card
 
-
     def create_handsprite(self, element):
         """This function creates sprites from player hands and put them into each 'img' value"""
         hand = True
@@ -196,12 +196,13 @@ class Base:
         mousepos = (1, 1)
 
         while True:
-            asked_board = n.send(AskBoard(p.PLAYER))
-            p.BOARD = asked_board.BOARD
-            p.TURN = asked_board.TURN
-            self.game_board.playing_grid = p.BOARD.playing_grid
+            "Ask and receive from the server his board and update the client by reinitializing the sprites."
+            asked_board = n.send(AskBoard(p.PLAYER))  # Send a request to the server to send the board to the client
+            p.BOARD = asked_board.BOARD  # Replace the board in config.
+            p.TURN = asked_board.TURN  # Replace the current turn in config.
+            self.game_board.playing_grid = p.BOARD.playing_grid  # Replace the current playing grid.
             if p.PLAYER == "P2":
-                self.reverse_playingboard()
+                self.reverse_playingboard()  # Reverse the board because the format of the server board is not reversed.
             self.create_sprite()
             self.create_handsprite(self.game_board.player_hand1)
             self.create_handsprite(self.game_board.player_hand2)
@@ -228,8 +229,13 @@ class Base:
                     # when click is on playing_grid
                     for row in range(len(self.game_board.playing_grid)):
                         for col in range(len(self.game_board.playing_grid[row])):
+                            if self.selected is None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                                # First click on playing_board
+                                if row == 5 and self.game_board.playing_grid[row][col]['card'] not in self.roads:
+                                    self.roads.append([self.game_board.playing_grid[row][col]['card']])
+
                             # Look if there is a selected card in memory and if click is on playing_grid
-                            if self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                            elif self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
                                 # modify parameters of card on board by card in memory
                                 self.game_board.playing_grid[row][col]['card'] = self.selected['card']
                                 self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
@@ -244,15 +250,19 @@ class Base:
                                 self.game_board.addHand(hand)  # call method addHand to get random card
                                 self.create_handsprite(hand)  # create new hand_sprite for the whole new hand
                                 self.selected = None  # reset select hand memory
+
+                                # Change the turn in the config instance
                                 if p.TURN == "P1":
                                     p.TURN = "P2"
                                 elif p.TURN == "P2":
                                     p.TURN = "P1"
 
+                                # Send the new board created by the client to the server
                                 if p.PLAYER == "P2":
-                                    self.erase_sprite()
-                                    self.reverse_playingboard()
-                                    p2 = n.send(p)
+                                    self.erase_sprite()  # Sprites can't be sent through the network so we erase it
+                                    self.reverse_playingboard()  # Normal format to send it to the server
+                                    p2 = n.send(p)  # Send the config instance
+                                    # Reversed format and recreate the sprites
                                     self.reverse_playingboard()
                                     self.create_sprite()
                                     self.create_handsprite(self.game_board.player_hand1)
