@@ -84,6 +84,11 @@ class Base:
         self.reversed_playingboard = [[],[],[],[],[],[]]
         self.roads = []
 
+
+        self.coordinates = ({"id": "DtL", "xy": (-1, -1)}, {"id": "DbL", "xy": (-1, 1)}, {"id": "DtR", "xy": (1, -1)},
+                            {"id": "DbR", "xy": (1, 1)}, {"id": "T", "xy": (0, -1)}, {"id": "R", "xy": (1, 0)},
+                            {"id": "B", "xy": (0, 1)}, {"id": "L", "xy": (-1, 0)})
+
     def logic(self, keys, newkeys, buttons, newbuttons, mousepos, lastmousepos, delta):
         raise NotImplementedError()
 
@@ -190,10 +195,77 @@ class Base:
             self.game_board.player_hand1[col]['img'] = None
             self.game_board.player_hand2[col]['img'] = None
 
+    def trace(self):
+        for row in range(len(self.game_board.playing_grid)):
+            for col in range(len(self.game_board.playing_grid[row])):
+                self.card = self.game_board.playing_grid[row][col]['card']
+                self.tosp = self.card.direction  # Split the str directions of the card
+                self.split_directions = self.tosp.split("-")  # create a list, split by "-"
+                if p.PLAYER == "P1":
+                    self.side = "Red"
+                elif p.PLAYER == "P2":
+                    self.side = "Blue"
+
+                for ind_direct in self.split_directions:  # iterate through the created list
+                    for a_dict in self.coordinates:  # iterate through coordinates default list
+                        if ind_direct == a_dict['id']:
+                            x, y = a_dict['xy']
+
+                            if self.card.number == "inf":
+                                for number in range(1, 5):
+                                    coords_nb = self.calculate_coords(x, y, number)
+                                    if coords_nb == (0, 0):
+                                        pass
+                                    else:
+                                        self.check_ifin_board(coords_nb, col, row)
+                            elif self.card.number == "1-2":
+                                for number in range(2):
+                                    coords_nb = self.calculate_coords(x, y, number)
+                                    if coords_nb == (0, 0):
+                                        pass
+                                    else:
+                                        self.check_ifin_board(coords_nb, col, row)
+                            elif self.card.number == "1-3":
+                                for number in range(3):
+                                    coords_nb = self.calculate_coords(x, y, number)
+                                    if coords_nb == (0, 0):
+                                        pass
+                                    else:
+                                        self.check_ifin_board(coords_nb, col, row)
+
+                            else:
+                                coords_nb = self.calculate_coords(x, y, self.card.number)
+                                self.check_ifin_board(coords_nb, col, row)
+
+    def calculate_coords(self, x, y, number):
+        x_calc = int(x) * int(number)
+        y_calc = int(y) * int(number)
+        coords_nb = (x_calc, y_calc)
+        return coords_nb
+
+    def check_ifin_board(self, coords_nb, col, row):
+        if coords_nb[0] == 0:
+            new_pos_x = col
+            new_pos_y = coords_nb[1] + row
+        elif coords_nb[1] == 0:
+            new_pos_x = coords_nb[0] + col
+            new_pos_y = row
+        else:
+            new_pos_x = coords_nb[0] + col
+            new_pos_y = coords_nb[1] + row
+
+        if 0 <= new_pos_x <= 4 and 0 <= new_pos_y <= 5:
+            try:
+                if self.card.side == self.side and self.game_board.playing_grid[new_pos_y][new_pos_x]['card'].side == self.side:
+                    self.card.targets.append(self.game_board.playing_grid[new_pos_y][new_pos_x]['card'])
+            except:
+                pass
+
     def main(self):
         keys = set()
         buttons = set()
         mousepos = (1, 1)
+        self.trace()
 
         while True:
             "Ask and receive from the server his board and update the client by reinitializing the sprites."

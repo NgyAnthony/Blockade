@@ -26,12 +26,7 @@ class Board:
         # Sides are determined by a list with the strings Blue and Red
         self.sides = ["Blue", "Red"]
 
-        self.coordinates = ({"id": "DtL", "xy": (-1, -1)}, {"id": "DbL", "xy": (-1, 1)}, {"id": "DtR", "xy": (1, -1)},
-                            {"id": "DbR", "xy": (1, 1)}, {"id": "T", "xy": (0, -1)}, {"id": "R", "xy": (1, 0)},
-                            {"id": "B", "xy": (0, 1)}, {"id": "L", "xy": (-1, 0)})
-
         self.initial_distribution()
-        self.trace()
         self.whole_grid()
 
     def __repr__(self):
@@ -70,6 +65,10 @@ class Board:
         for row in range(len(self.playing_grid)):
             for col in range(len(self.playing_grid[row])):
                 side = np.random.choice(self.sides, 1)[0]
+                if row == 0:
+                    side = self.sides[0]
+                elif row == 5:
+                    side = self.sides[1]
                 a = Dealer(side)
                 card = a.card
                 self.playing_grid[row][col]['card'] = card
@@ -80,62 +79,6 @@ class Board:
         for i in self.playing_grid:
             self.grid.append(i)
         self.grid.append(self.player_hand2)
-
-    def trace(self):
-        for row in range(len(self.playing_grid)):
-            for col in range(len(self.playing_grid[row])):
-                self.card = self.playing_grid[row][col]['card']
-                self.tosp = self.card.direction  # Split the str directions of the card
-                self.split_directions = self.tosp.split("-")  # create a list, split by "-"
-
-                for ind_direct in self.split_directions:  # iterate through the created list
-                    for a_dict in self.coordinates:  # iterate through coordinates default list
-                        if ind_direct == a_dict['id']:
-                            x, y = a_dict['xy']
-
-                            if self.card.number == "inf":
-                                for number in range(5):
-                                    coords_nb = self.calculate_coords(x, y, number)
-                                    self.check_ifin_board(coords_nb, col, row)
-
-                            elif self.card.number == "1-2":
-                                for number in range(1, 2):
-                                    coords_nb = self.calculate_coords(x, y, number)
-                                    self.check_ifin_board(coords_nb, col, row)
-
-                            elif self.card.number == "1-3":
-                                for number in range(1, 3):
-                                    coords_nb = self.calculate_coords(x, y, number)
-                                    self.check_ifin_board(coords_nb, col, row)
-
-                            else:
-                                coords_nb = self.calculate_coords(x, y, self.card.number)
-                                self.check_ifin_board(coords_nb, col, row)
-                print(self.card.targets)
-
-    def calculate_coords(self, x, y, number):
-        x_calc = int(x) * int(number)
-        y_calc = int(y) * int(number)
-        coords_nb = (x_calc, y_calc)
-        return coords_nb
-
-    def check_ifin_board(self, coords_nb, col, row):
-        if coords_nb[0] == 0:
-            new_pos_x = col
-            new_pos_y = coords_nb[1] + row
-        elif coords_nb[1] == 0:
-            new_pos_x = coords_nb[0] + col
-            new_pos_y = row
-        else:
-            new_pos_x = coords_nb[0] + col
-            new_pos_y = coords_nb[1] + row
-
-        if 0 <= new_pos_x <= 4 and 0 <= new_pos_y <= 5:
-            try:
-                if self.card.side == "Red" and self.playing_grid[new_pos_y][new_pos_x]['card'].side == "Red":
-                    self.card.targets.append(self.playing_grid[new_pos_y][new_pos_x]['card'])
-            except:
-                pass
 
 
 class Dealer:
@@ -183,10 +126,3 @@ class Card:
 
     def __str__(self):
         return '\n[CARD CLASS] \n Side: {} - Direction: {} - Number : {}'.format(self.side, self.direction, self.number)
-
-
-class PathFinder:
-    def __init__(self, playing_grid):
-        self.playing_grid = playing_grid
-        self.directions = ("DtL-DtR", "DtL-DtR-DbR-DbL", "DtL-T-DtR", "DtL-T-DtR-R-DbR-B-DbL-L",
-                    "L-R", "L-T-R", "L-T-R-B", "R-DbR-B-DbL-L", "T", "T-B")
