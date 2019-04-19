@@ -33,13 +33,13 @@ class CardSprite:
     def filp_img(self):
         if p.PLAYER == "P1" and "Blue" in self.side:
             if self.hand:
-                self.image = pygame.transform.scale(pygame.image.load("Other_assets/blue_hidden.png"), (85, 85))
+                self.image = pygame.transform.scale(pygame.image.load("Other_assets/blue_hidden.png"), (config.TILE_HEIGHT, config.TILE_WIDTH))
             else:
                 self.image = pygame.transform.flip(self.image, False, True)
 
         elif p.PLAYER == "P2" and "Red" in self.side:
             if self.hand:
-                self.image = pygame.transform.scale(pygame.image.load("Other_assets/red_hidden.png"), (85, 85))
+                self.image = pygame.transform.scale(pygame.image.load("Other_assets/red_hidden.png"), (config.TILE_HEIGHT, config.TILE_WIDTH))
             else:
                 self.image = pygame.transform.flip(self.image, False, True)
 
@@ -120,7 +120,7 @@ class Base:
             # Load every images with independent readable variables from ASSETS_ACCESS
             for x in range(len(self.ASSETS_ACCESS)):
                 current_access = self.ASSETS_ACCESS[x]  # Readable path as variable
-                current_access = pygame.transform.scale(pygame.image.load(self.ASSETS_PATH[x]), (85, 85))  # Open images with previous variable as argument
+                current_access = pygame.transform.scale(pygame.image.load(self.ASSETS_PATH[x]), (config.TILE_HEIGHT, config.TILE_WIDTH))  # Open images with previous variable as argument
                 img_dict = {
                     'id': self.ASSETS_ACCESS[x],
                     'img': current_access

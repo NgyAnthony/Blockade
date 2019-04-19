@@ -1,4 +1,5 @@
 from base import *
+from config import *
 import sys
 sys.dont_write_bytecode = True
 
@@ -18,7 +19,7 @@ class Game(Base):
         """ This function draws the background and the cards on the board"""
         # Completely redraw the surface, starting with background.
         self.surface.fill(self.standard_colors[2]['rgb'])
-        self.rect = pygame.Rect((self.surface_x / 2 - (config.BOARD_WIDTH / 2)), 0, 500, 800)
+        self.rect = pygame.Rect((self.surface_x / 2 - (config.BOARD_WIDTH / 2)), 0, config.BOARD_WIDTH, config.BOARD_HEIGHT)
 
         # Draw a fresh background (board with player1 and 2 sides)
         for row in range(len(self.game_board.grid)):
