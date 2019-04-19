@@ -58,7 +58,33 @@ class Game(Base):
         for col in range(len(self.game_board.player_hand2)):
             self.game_board.player_hand2[col]['img'].draw(self.surface)
 
-        pygame.draw.rect(self.surface, self.standard_colors[3]['rgb'], self.rect, 5)
+        if self.side == "Red":
+            self.mycolor = self.standard_colors[1]['rgb']
+            self.enemy_color = self.standard_colors[0]['rgb']
+
+        if self.side == "Blue":
+            self.mycolor = self.standard_colors[0]['rgb']
+            self.enemy_color = self.standard_colors[1]['rgb']
+
+        pygame.draw.rect(self.surface, self.mycolor, self.rect, 5)
+        self.button("Reset", 20, self.surface_y - 200, 150, 50, self.standard_colors[5]['rgb'], self.standard_colors[6]['rgb'], self.reset)
+        self.button("Règles", 20, self.surface_y - 270, 150, 50, self.standard_colors[5]['rgb'], self.standard_colors[6]['rgb'], self.rules)
+        self.button("Quitter", 20, self.surface_y - 130, 150, 50, self.standard_colors[9]['rgb'], self.standard_colors[7]['rgb'], self.quit)
+
+        scoreadv = self.scoreadv()
+        self.button("Score adv. : %s" % scoreadv, self.surface_x - 250, 20, 150, 100, self.enemy_color, self.enemy_color, None)
+
+        score = self.score()
+        self.button("Score : %s" % score, self.surface_x - 250, self.surface_y - 200, 150, 50, self.mycolor, self.mycolor, None)
+
+        turn = self.whosturn()
+        self.button("Tour : %s" % turn, self.surface_x - 250, self.surface_y - 270, 150, 50, self.mycolor, self.mycolor, None)
+
+        roads = self.roads_established
+        self.button("Routes : %s" % roads, self.surface_x - 250, self.surface_y - 130, 150, 50, self.mycolor, self.mycolor, None)
+
+        info = self.information
+        self.button(info, 0, self.surface_y - 60, 1024, 28, self.standard_colors[3]['rgb'], self.standard_colors[3]['rgb'], None)
 
 
 if __name__ == "__main__":

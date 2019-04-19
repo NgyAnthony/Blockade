@@ -3,7 +3,8 @@ import os
 import config
 import sys
 from network import Network
-from config import AskBoard
+from config import AskBoard, ResetBoard
+import webbrowser
 
 pygame.init()  # Prepare the PyGame module for use
 
@@ -70,10 +71,16 @@ class Base:
         #(self.sq_sz_x, self.sq_sz_y) = (config.CARD_WIDTH, config.CARD_HEIGHT)
         (self.sq_sz_x, self.sq_sz_y) = (config.BOARD_WIDTH // self.n_col, config.BOARD_HEIGHT // self.n_row)
 
-        self.standard_colors = [{'color': 'Blue', 'rgb': (84, 175, 214)},
-                                {'color': 'Red', 'rgb': (214, 108, 84)},
-                                {'color': 'Grey', 'rgb': (79, 79, 79)},
-                                {'color': 'White', 'rgb': (236, 240, 241)}]  # Set up colors [blue, red, grey]
+        self.standard_colors = [{'color': '0Blue', 'rgb': (84, 175, 214)},
+                                {'color': '1Red', 'rgb': (214, 108, 84)},
+                                {'color': '2Grey', 'rgb': (79, 79, 79)},
+                                {'color': '3White', 'rgb': (236, 240, 241)},
+                                {'color': '4Black', 'rgb': (0, 0, 0)},
+                                {'color': '5Green', 'rgb': (0, 153, 51)},
+                                {'color': '6Lightgreen', 'rgb': (0, 204, 102)},
+                                {'color': '7Lightred', 'rgb': (255, 102, 102)},
+                                {'color': '8Lightblue', 'rgb': (51, 153, 255)},
+                                {'color': '9Brightred', 'rgb': (255, 51, 0)}]  # Set up colors [blue, red, grey]
 
         self.colorblind = [{'color': 'Blue', 'rgb': (61, 3, 255)}, {'color': 'Red', 'rgb': (237, 0, 0)},
                            {'color': 'Grey', 'rgb': (79, 79, 79)}, {'color': 'White', 'rgb': (236, 240, 241)}]
@@ -85,7 +92,7 @@ class Base:
         self.reversed_playingboard = [[],[],[],[],[],[]]
         self.roads = []
         self.roads_established = 0
-
+        self.information = "Bienvenue dans Blockade, lisez les règles avant de jouer !"
 
         self.coordinates = ({"id": "DtL", "xy": (-1, -1)}, {"id": "DbL", "xy": (-1, 1)}, {"id": "DtR", "xy": (1, -1)},
                             {"id": "DbR", "xy": (1, 1)}, {"id": "T", "xy": (0, -1)}, {"id": "R", "xy": (1, 0)},
@@ -270,6 +277,71 @@ class Base:
             except:
                 pass
 
+    def text_objects(self, text, font):
+        textSurface = font.render(text, True, self.standard_colors[4]['rgb'])
+        return textSurface, textSurface.get_rect()
+
+    def button(self, msg, x, y, w, h, ic, ac, action=None):
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if x + w > mouse[0] > x and y + h > mouse[1] > y:
+            pygame.draw.rect(self.window, ac, (x, y, w, h))
+
+            if click[0] == 1 and action != None:
+                action()
+        else:
+            pygame.draw.rect(self.window, ic, (x, y, w, h))
+
+        smallText = pygame.font.SysFont("comicsansms", 20)
+        textSurf, textRect = self.text_objects(msg, smallText)
+        textRect.center = ((x + (w / 2)), (y + (h / 2)))
+        self.window.blit(textSurf, textRect)
+
+    def reset(self):
+        return n.send(ResetBoard(p.PLAYER))
+
+    def quit(self):
+        pygame.quit()
+        sys.exit()
+        return
+
+    def whosturn(self):
+        if p.TURN == "P1":
+            return "Red"
+        elif p.TURN == "P2":
+            return "Blue"
+
+    def score(self):
+        if self.side == "Red":
+            return p.REDSCORE
+        elif self.side == "Blue":
+            return p.BLUESCORE
+
+    def scoreadv(self):
+        if self.side == "Red":
+            return p.BLUESCORE
+        elif self.side == "Blue":
+            return p.REDSCORE
+
+    def check_if_road_alive(self):
+        for road in self.roads:
+            for tile in road:
+                if tile not in self.game_board.playing_grid:
+                    self.information = "Vous avez perdu une route."
+                    print("A ROAD HAS BEEN BROKEN.")
+                    self.roads_established -= 1
+                    self.roads.remove(road)
+                    break
+
+    def add_score(self):
+        if self.side == "Red":
+            p.REDSCORE += self.roads_established
+        elif self.side == "Blue":
+            p.BLUESCORE += self.roads_established
+
+    def rules(self):
+        webbrowser.open('https://www.google.com')
+
     def main(self):
         keys = set()
         buttons = set()
@@ -305,12 +377,12 @@ class Base:
                     buttons.add(event.button)
                     newbuttons.add(event.button)
                     mousepos = event.pos
-                    pos = pygame.mouse.get_pos()
+                    self.pos = pygame.mouse.get_pos()
 
                     # when click is on playing_grid
                     for row in range(len(self.game_board.playing_grid)):
                         for col in range(len(self.game_board.playing_grid[row])):
-                            if self.selected is None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                            if self.selected is None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(self.pos):
                                 self.colliding_card = self.game_board.playing_grid[row][col]['card']
 
                                 # Click is on enemy card
@@ -319,6 +391,7 @@ class Base:
                                         self.roads.remove(self.roads[self.roads_number - 1])
                                         self.roads_number -= 1
                                         self.init_road = None
+                                        self.information = "Vous avez annulé la création de chemin."
                                         print("YOU STOPPED BUILDING")
 
                                 # Click is first click and on own card and on friendly camp
@@ -326,6 +399,7 @@ class Base:
                                     self.init_road = self.colliding_card
                                     self.roads.append([self.init_road])
                                     self.roads_number += 1
+                                    self.information = "Création d'un chemin."
                                     print("YOU ARE CREATING A ROAD")
 
                                 # Click is on own side and previous card is in memory
@@ -341,12 +415,15 @@ class Base:
                                     # Click is on enemy camp and colliding card is in targets
                                     if self.check_ifin_target and row == 0:
                                         self.roads_established += 1
+                                        self.information = "Un chemin a été créé."
                                         print("YOU HAVE ESTABLISHED A ROAD")
+                                        self.add_score()
 
                                     # Click is on a target and not in the friendly camp
                                     elif self.check_ifin_target and row != 5:
                                         self.init_road = self.colliding_card
                                         self.roads[self.roads_number - 1].append(self.init_road)
+                                        self.information = "Vous avez rajouté une carte au chemin."
                                         print("YOU ADDED %s TO YOUR ROAD" % self.init_road)
 
                                     # If no condition satisfied, remove road.
@@ -354,13 +431,16 @@ class Base:
                                         self.roads.remove(self.roads[self.roads_number - 1])
                                         self.roads_number -= 1
                                         self.init_road = None
+                                        self.information = "Vous ne pouvez pas construire ici."
                                         print("YOU FAILED TO BUILD A ROAD")
 
                             # Look if there is a selected card in memory and if click is on playing_grid
-                            elif self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos) and self.init_road is None:
+                            elif self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(self.pos) and self.init_road is None:
+                                self.check_if_road_alive()
                                 # modify parameters of card on board by card in memory
                                 self.game_board.playing_grid[row][col]['card'] = self.selected['card']
                                 self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
+                                self.information = "Vous avez rajouté une carte."
                                 print("YOU PUT A CARD ON THE PLAYING BOARD")
                                 # identify which hand was played
                                 if self.selected['card'].side == "Blue":
@@ -399,16 +479,18 @@ class Base:
 
                     # when click is on player_hand1
                     for card_dict in self.game_board.player_hand1:
-                        if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P2" and p.PLAYER == "P2":
+                        if card_dict['img'].rect.collidepoint(self.pos) and p.TURN == "P2" and p.PLAYER == "P2":
                             self.selected = card_dict
                             self.game_board.current_turn = "Red"
+                            self.information = "Vous avez pris une carte."
                             print("YOU SELECTED A CARD IN YOUR HAND")
 
                     # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
-                        if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P1" and p.PLAYER == "P1":
+                        if card_dict['img'].rect.collidepoint(self.pos) and p.TURN == "P1" and p.PLAYER == "P1":
                             self.selected = card_dict
                             self.game_board.current_turn = "Blue"
+                            self.information = "Vous avez pris une carte."
                             print("YOU SELECTED A CARD IN YOUR HAND")
 
                 if event.type == pygame.MOUSEBUTTONUP:

@@ -27,7 +27,7 @@ random_player = random.choice(player_list)
 board = Board()
 
 # Create two Config instances which will serve as the databases used in our game
-players = [Config("P1", board, random_player), Config("P2", board, random_player)]
+players = [Config("P1", board, random_player, 0, 0), Config("P2", board, random_player, 0, 0)]
 
 # Keep track of the threads connected
 currentPlayer = 0
@@ -55,6 +55,24 @@ def threaded_client(conn, player):
                     reply = players[0]
 
                 print("Updating board...")
+                print("- Received: ", data)
+                print("- Sending : ", reply)
+                conn.sendall(pickle.dumps(reply))
+
+            elif data.__class__.__name__ == "ResetBoard":
+                new_board = Board()
+                new_random = random.choice(player_list)
+                new_players = [Config("P1", new_board, new_random, 0, 0), Config("P2", new_board, new_random, 0, 0)]
+                board = new_board
+                players[0] = new_players[0]
+                players[1] = new_players[1]
+
+                if player == 1:
+                    reply = players[1]  # Give the client his updated board
+                elif player == 0:
+                    reply = players[0]
+
+                print("Resetting board...")
                 print("- Received: ", data)
                 print("- Sending : ", reply)
                 conn.sendall(pickle.dumps(reply))

@@ -1,5 +1,5 @@
 SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 720
+SCREEN_HEIGHT = 800
 
 BOARD_WIDTH = 450
 BOARD_HEIGHT = 720
@@ -22,12 +22,19 @@ FRAMERATE = 15
 
 
 class Config:
-    def __init__(self, PLAYER, BOARD, TURN):
+    def __init__(self, PLAYER, BOARD, TURN, REDSCORE, BLUESCORE):
         self.PLAYER = PLAYER
         self.BOARD = BOARD
         self.TURN = TURN
+        self.REDSCORE = REDSCORE
+        self.BLUESCORE = BLUESCORE
 
 
 class AskBoard:
     def __init__(self, ask):
         self.ask = ask
+
+
+class ResetBoard:
+    def __init__(self, reset):
+        self.reset = reset

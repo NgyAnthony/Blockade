@@ -32,7 +32,7 @@ import pygameMenu
 from pygameMenu.locals import *
 
 DEVS = ['Developpeur: {0}'.format("NGUYEN Anthony"),
-        'Designer graphique: {0}'.format("u/elheber"),
+        'Multimedia Artist: {0}'.format("u/elheber"),
         PYGAMEMENU_TEXT_NEWLINE,
         'Email: {0}'.format("nguyen.anthony.dev@gmail.com"),
         'Git: {0}'.format("github.com/NgyAnthony/Blockade")]
@@ -43,7 +43,7 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 FPS = 3
 MENU_BACKGROUND_COLOR = (0, 173, 238)
-WINDOW_SIZE = (1024, 800)
+WINDOW_SIZE = (1024, 720)
 
 # -----------------------------------------------------------------------------
 # Init pygame
