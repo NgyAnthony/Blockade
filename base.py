@@ -4,7 +4,6 @@ import config
 import sys
 from network import Network
 from config import AskBoard
-import time
 
 pygame.init()  # Prepare the PyGame module for use
 
@@ -81,8 +80,11 @@ class Base:
 
         self.surface = pygame.display.set_mode((self.surface_x, self.surface_y)) # Create the surface of (width, height) and its window.
         self.selected = None
+        self.init_road = None
+        self.roads_number = 0
         self.reversed_playingboard = [[],[],[],[],[],[]]
         self.roads = []
+        self.roads_established = 0
 
 
         self.coordinates = ({"id": "DtL", "xy": (-1, -1)}, {"id": "DbL", "xy": (-1, 1)}, {"id": "DtR", "xy": (1, -1)},
@@ -132,6 +134,7 @@ class Base:
             self.music = {str(i)[:-4]: "music/" + i for i in os.listdir("music") if os.path.isfile("music/" + i)}
 
     def reverse_playingboard(self):
+        """This function takes the playing board and reverse its x and y axis"""
         xrow = 0
         for row in range(len(self.game_board.playing_grid) -1, -1, -1):
             for col in range(len(self.game_board.playing_grid[row]) -1, -1, -1):
@@ -187,6 +190,7 @@ class Base:
                     element[col]['img'] = a_card
 
     def erase_sprite(self):
+        """Erase all sprites/pygame objects in the board"""
         for row in range(len(self.game_board.playing_grid)):
             for col in range(len(self.game_board.playing_grid[row])):
                 self.game_board.playing_grid[row][col]['img'] = None
@@ -196,6 +200,7 @@ class Base:
             self.game_board.player_hand2[col]['img'] = None
 
     def trace(self):
+        """Find out the available path of each card"""
         for row in range(len(self.game_board.playing_grid)):
             for col in range(len(self.game_board.playing_grid[row])):
                 self.card = self.game_board.playing_grid[row][col]['card']
@@ -203,8 +208,10 @@ class Base:
                 self.split_directions = self.tosp.split("-")  # create a list, split by "-"
                 if p.PLAYER == "P1":
                     self.side = "Red"
+                    self.enemy_side = "Blue"
                 elif p.PLAYER == "P2":
                     self.side = "Blue"
+                    self.enemy_side = "Red"
 
                 for ind_direct in self.split_directions:  # iterate through the created list
                     for a_dict in self.coordinates:  # iterate through coordinates default list
@@ -238,12 +245,14 @@ class Base:
                                 self.check_ifin_board(coords_nb, col, row)
 
     def calculate_coords(self, x, y, number):
+        """Take the template coordinates and multiple it by the assigned number of the card."""
         x_calc = int(x) * int(number)
         y_calc = int(y) * int(number)
         coords_nb = (x_calc, y_calc)
         return coords_nb
 
     def check_ifin_board(self, coords_nb, col, row):
+        """Set x and y position of the target card based on adjusted coordinates and col/row position of shooter card"""
         if coords_nb[0] == 0:
             new_pos_x = col
             new_pos_y = coords_nb[1] + row
@@ -265,7 +274,6 @@ class Base:
         keys = set()
         buttons = set()
         mousepos = (1, 1)
-        self.trace()
 
         while True:
             "Ask and receive from the server his board and update the client by reinitializing the sprites."
@@ -278,6 +286,7 @@ class Base:
             self.create_sprite()
             self.create_handsprite(self.game_board.player_hand1)
             self.create_handsprite(self.game_board.player_hand2)
+            self.trace()
 
             self.clock.tick(self.framerate)
             delta = float(self.clock.get_time()) / float(self.framerate)
@@ -302,16 +311,57 @@ class Base:
                     for row in range(len(self.game_board.playing_grid)):
                         for col in range(len(self.game_board.playing_grid[row])):
                             if self.selected is None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
-                                # First click on playing_board
-                                if row == 5 and self.game_board.playing_grid[row][col]['card'] not in self.roads:
-                                    self.roads.append([self.game_board.playing_grid[row][col]['card']])
+                                self.colliding_card = self.game_board.playing_grid[row][col]['card']
+
+                                # Click is on enemy card
+                                if self.colliding_card.side == self.enemy_side:
+                                    if self.roads_number > 0:
+                                        self.roads.remove(self.roads[self.roads_number - 1])
+                                        self.roads_number -= 1
+                                        self.init_road = None
+                                        print("YOU STOPPED BUILDING")
+
+                                # Click is first click and on own card and on friendly camp
+                                elif self.colliding_card.side == self.side and self.init_road is None and row == 5:
+                                    self.init_road = self.colliding_card
+                                    self.roads.append([self.init_road])
+                                    self.roads_number += 1
+                                    print("YOU ARE CREATING A ROAD")
+
+                                # Click is on own side and previous card is in memory
+                                elif self.colliding_card.side == self.side and self.init_road is not None:
+                                    # Return True if colliding card is in targets of init_card
+                                    for card in self.init_road.targets:
+                                        if card.side == self.colliding_card.side and card.direction == self.colliding_card.direction and card.number == self.colliding_card.number:
+                                            self.check_ifin_target = True
+                                            break
+                                        else:
+                                            self.check_ifin_target = False
+
+                                    # Click is on enemy camp and colliding card is in targets
+                                    if self.check_ifin_target and row == 0:
+                                        self.roads_established += 1
+                                        print("YOU HAVE ESTABLISHED A ROAD")
+
+                                    # Click is on a target and not in the friendly camp
+                                    elif self.check_ifin_target and row != 5:
+                                        self.init_road = self.colliding_card
+                                        self.roads[self.roads_number - 1].append(self.init_road)
+                                        print("YOU ADDED %s TO YOUR ROAD" % self.init_road)
+
+                                    # If no condition satisfied, remove road.
+                                    elif self.check_ifin_target is False:
+                                        self.roads.remove(self.roads[self.roads_number - 1])
+                                        self.roads_number -= 1
+                                        self.init_road = None
+                                        print("YOU FAILED TO BUILD A ROAD")
 
                             # Look if there is a selected card in memory and if click is on playing_grid
-                            elif self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos):
+                            elif self.selected is not None and self.game_board.playing_grid[row][col]['img'].rect.collidepoint(pos) and self.init_road is None:
                                 # modify parameters of card on board by card in memory
                                 self.game_board.playing_grid[row][col]['card'] = self.selected['card']
                                 self.game_board.playing_grid[row][col]['img'].image = self.selected['img'].image
-
+                                print("YOU PUT A CARD ON THE PLAYING BOARD")
                                 # identify which hand was played
                                 if self.selected['card'].side == "Blue":
                                     hand = self.game_board.player_hand1
@@ -352,12 +402,14 @@ class Base:
                         if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P2" and p.PLAYER == "P2":
                             self.selected = card_dict
                             self.game_board.current_turn = "Red"
+                            print("YOU SELECTED A CARD IN YOUR HAND")
 
                     # when click is on player_hand2
                     for card_dict in self.game_board.player_hand2:
                         if card_dict['img'].rect.collidepoint(pos) and p.TURN == "P1" and p.PLAYER == "P1":
                             self.selected = card_dict
                             self.game_board.current_turn = "Blue"
+                            print("YOU SELECTED A CARD IN YOUR HAND")
 
                 if event.type == pygame.MOUSEBUTTONUP:
                     buttons.discard(event.button)
