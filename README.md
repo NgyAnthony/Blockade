@@ -14,7 +14,7 @@ Environnement : Ce jeu a été crée sous macOS Mojave(10.14.4 (18E226)), il est
 
 
 ![Jeu](https://i.imgur.com/mPBBeFC.png)
-### Nécéssaire:
+### Nécéssaire
 	Global :
     - Python 3.0+
     - Pygame
@@ -30,24 +30,24 @@ Environnement : Ce jeu a été crée sous macOS Mojave(10.14.4 (18E226)), il est
     - pickle
 
     
-### Contenu:
+### Contenu
     - /server.py    | Programme à exécuter : lance le serveur
     - /main.py 	    | Programme à exécuter : lance le jeu
-   	  - /network.py   | Permet la liaison entre le serveur et le client
-   	  - /Assets 	  | Dossier contenant les cartes pour les joueurs bleu et rouge.
-      - /Other_assets | Dossier contenant les cartes de dos
-      - /base.py 	  | Exécute le main loop pygame
-      - /config.py    | Contient les paramètres globaux
-      - /logic.py     | Créer un objet "board" avec des objets "cards" choisis aléatoirement
+    - /network.py   | Permet la liaison entre le serveur et le client
+    - /Assets 	    | Dossier contenant les cartes pour les joueurs bleu et rouge.
+    - /Other_assets | Dossier contenant les cartes de dos
+    - /base.py 	    | Exécute le main loop pygame
+    - /config.py    | Contient les paramètres globaux
+    - /logic.py     | Créer un objet "board" avec des objets "cards" choisis aléatoirement
 
-## Règles du jeu et fonctionnement:
-### Règles du jeu:
+## Règles du jeu et fonctionnement
+### Règles du jeu
 L'objectif du jeu est d'établir une "route" de votre camp au camp adverse. A chaque tour, le nombre de routes que vous avez établi est rajouté au score. <br>
 Afin d'établir une route, vous devez utiliser les cartes sur le plateau en partant de votre camp jusqu'au camp adverse. <br>
 ![Jeu](https://i.imgur.com/JRnpShJ.png
 )
 
-### Fonctionnement:
+### Fonctionnement
 
 Les cartes sont composées de flèches qui indiquent la direction dans laquelle le chemin peut être crée ainsi qu'un nombre qui indique la distance à laquelle le chemin peut aller.
 ![Jeu](https://i.imgur.com/jLvRvFV.png)
@@ -64,3 +64,46 @@ En pratique, il suffit de cliquer sur une première carte dans votre camp puis d
 Vous pouvez voir ici qu'un chemin à été établi en passant par la flêche jaune.
 
 ![Jeu](https://i.imgur.com/TVoyKFk.png)
+
+## Cahier des charges
+### Fonctionnalitées implémentées
+- Algorithmie/logique
+    - Création de cartes sous la forme d'objets dont les paramètres sont tirés selon des probabilités grâce à numpy
+    - Gestion de l'ajout d'une carte partant de la main du joueur au plateau
+    - Ajout d'une carte dans la main du joueur lorsqu'une carte est posée sur le plateau
+	- Création d'un algorithme de reconnaissance du chemin à un premier degré
+
+
+- Interface utilisateur
+	- Ajout de score basé sur le nombre de routes établies
+	- Les cartes dans la main de l'adversaire sont cachées
+	- Affichage d'informations informant sur le statut du jeu en cours
+	- Ajout d'un bouton "Tutoriel" qui renvoie vers le reposit github
+
+
+- Réseau
+	- Création d'un réseau avec un serveur et deux clients
+	- Gestion du plateau par le serveur
+	- Fonction de "Reset" qui permet de créer une nouvelle partie sans relancer le serveur
+	- Rotation de 180° pour le joueur 2 de son plateau afin d'assurer un affichage identique
+### Fonctionnalitées à rajouter
+- Algorithmie/logique
+	- Ajout d'une intelligence artificielle aidée par le module de reconnaissance du chemin à prendre mais à plusieurs degrés
+	- Ajuster les probabilités pour équilibrer le gameplay
+	- Ajouter un timer identique aux échecs
+	
+- Interface utilisateur
+	- Ajouter une animation lorsque la souris passe au dessus d'une carte
+	- Afficher les routes construises
+	- Ajouter une animation lorsqu'une route est brisée
+	- Ajouter une animation où une flèche suit la  création de route (cf dernier exmple)
+	- Ajouter un menu
+
+- Réseau
+    - Gérer automatiquement la création de lobby
+     
+### Bugs
+- Il est possible que le client ne se lance pas et affiche l'erreur suivante :![Bug](https://i.imgur.com/JIifSBJ.png) Ce bug est dû au fait que le client n'a pas réussi à ce connecter au serveur : donc soit le serveur n'est pas ouvert, soit le serveur est ouvert mais le client n'a tout de même pas pu se connecter. Dans le deuxième cas, je n'ai pas trouvé de fix, cependant il suffit de patienter un peu et de relancer le serveur et le client. Si rien n'y change, changez le port du serveur et du client.
+
+- Si vous tentez de créer une route en passant deux fois par votre camp, l'algorithme va rejeter la route. Ceci n'est pas un bug mais une fonctionnalité qui a été laissée exprès pour éviter de créer des chemins redondants.
+- Lorsque vous cliquez sur "Tutoriel", le lien est ouvert plusieurs fois. Cela est du au fait que le jeu tourne à 15fps, par conséquent la fonction est appelée plusieurs fois.
