@@ -340,7 +340,7 @@ class Base:
             p.BLUESCORE += self.roads_established
 
     def rules(self):
-        webbrowser.open('https://www.google.com')
+        webbrowser.open('https://github.com/NgyAnthony/Blockade')
 
     def main(self):
         keys = set()
