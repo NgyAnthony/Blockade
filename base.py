@@ -1,17 +1,17 @@
-import pygame
-import os
-import config
-import sys
-from network import Network
+import pygame  # Librairie Pygame
+import sys  # Librairie standard python
+import webbrowser  # Librairie standard python
+import os  # Librairie standard python
+from network import Network  # Import une class "network" de Network.py
+import config  # Importer le fichier "config.py"
 from config import AskBoard, ResetBoard
-import webbrowser
 
-pygame.init()  # Prepare the PyGame module for use
+pygame.init()  # Initialliser le module python
 
-font = pygame.font.Font(None, 42)
+font = pygame.font.Font(None, 42)  # Définir une police d'écriture
 
-n = Network()
-p = n.getP()
+n = Network()  # Création d'une instance Network pour établir la connection avec le serveur
+p = n.getP()  # Appel d'une fonction qui retourne les données envoyées par le serveur
 
 
 class CardSprite:
@@ -68,7 +68,6 @@ class Base:
         (self.n_col, self.n_row) = (len(self.game_board.grid[0]), len(self.game_board.grid))  # This is an n_col * n_row board.
         (self.surface_x, self.surface_y) = (self.window.get_size())
 
-        #(self.sq_sz_x, self.sq_sz_y) = (config.CARD_WIDTH, config.CARD_HEIGHT)
         (self.sq_sz_x, self.sq_sz_y) = (config.BOARD_WIDTH // self.n_col, config.BOARD_HEIGHT // self.n_row)
 
         self.standard_colors = [{'color': '0Blue', 'rgb': (84, 175, 214)},
@@ -298,6 +297,8 @@ class Base:
         self.window.blit(textSurf, textRect)
 
     def reset(self):
+        self.game_board.player_hand1 = p.BOARD.player_hand1  # Replace the current hand1.
+        self.game_board.player_hand2 = p.BOARD.player_hand2  # Replace the current hand2.
         return n.send(ResetBoard(p.PLAYER))
 
     def quit(self):
@@ -353,6 +354,7 @@ class Base:
             p.BOARD = asked_board.BOARD  # Replace the board in config.
             p.TURN = asked_board.TURN  # Replace the current turn in config.
             self.game_board.playing_grid = p.BOARD.playing_grid  # Replace the current playing grid.
+
             if p.PLAYER == "P2":
                 self.reverse_playingboard()  # Reverse the board because the format of the server board is not reversed.
             self.create_sprite()

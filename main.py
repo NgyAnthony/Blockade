@@ -1,6 +1,5 @@
-from base import *
-from config import *
-import sys
+from base import *  # Importer le fichier base.py
+import sys  # Librairie standard python
 sys.dont_write_bytecode = True
 
 
